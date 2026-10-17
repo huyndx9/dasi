@@ -11,6 +11,7 @@ import { languageDistribution } from '@/lib/classes';
 import { locale, tr } from '@/lib/i18n';
 import { joinUrl } from '@/lib/routes';
 import { CopyButton } from './copy-button';
+import { LessonsTab } from './lessons-tab';
 
 const tabs = [
   { key: 'students', label: 'classDetail.tabStudents' },
@@ -37,6 +38,15 @@ export default async function ClassDetailPage({
     .eq('id', id)
     .maybeSingle();
   if (!cls) notFound();
+
+  const lessons =
+    tab === 'lessons'
+      ? await supabase
+          .from('lessons')
+          .select('id, title, topic, status, started_at, ended_at, target_langs')
+          .eq('class_id', cls.id)
+          .order('started_at', { ascending: false })
+      : null;
 
   const h = await headers();
   const origin = `${h.get('x-forwarded-proto') ?? 'http'}://${h.get('x-forwarded-host') ?? h.get('host')}`;
@@ -88,7 +98,7 @@ export default async function ClassDetailPage({
           </nav>
           <div className="p-4">
             {tab === 'lessons' ? (
-              <p className="text-muted">{tr('classDetail.noLessons')}</p>
+              <LessonsTab lessons={lessons?.data ?? []} failed={!!lessons?.error} />
             ) : members.length === 0 ? (
               <p className="text-muted">
                 {tr('classDetail.noStudents', { code: cls.invite_code })}
