@@ -7,7 +7,16 @@ export function homePathFor(role: string | null | undefined): string {
 }
 
 export function loginPath(next?: string): string {
-  return next && next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login';
+  return withNext('/login', next);
+}
+
+/** Onboarding keeps the page the user was heading to, e.g. an invite link `/join?code=…`. */
+export function onboardingPath(next?: string): string {
+  return withNext('/onboarding', next);
+}
+
+function withNext(path: string, next?: string): string {
+  return next && next !== '/' ? `${path}?next=${encodeURIComponent(next)}` : path;
 }
 
 /**

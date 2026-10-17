@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { homePathFor, joinUrl, loginPath, safeNext } from './routes';
+import { homePathFor, joinUrl, loginPath, onboardingPath, safeNext } from './routes';
 
 describe('safeNext', () => {
   it('keeps same-site paths', () => {
@@ -24,6 +24,11 @@ describe('route helpers', () => {
   it('encodes the return path for login', () => {
     expect(loginPath('/join?code=HANGUL')).toBe('/login?next=%2Fjoin%3Fcode%3DHANGUL');
     expect(loginPath('/')).toBe('/login');
+  });
+
+  it('keeps the return path through onboarding', () => {
+    expect(onboardingPath('/join?code=HANGUL')).toBe('/onboarding?next=%2Fjoin%3Fcode%3DHANGUL');
+    expect(onboardingPath()).toBe('/onboarding');
   });
 
   it('builds the QR join link', () => {

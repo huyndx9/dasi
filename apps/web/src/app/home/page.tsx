@@ -15,7 +15,9 @@ export default async function StudentHomePage({
   const { supabase, profile } = await requireSession('/home', 'student');
   const { data: memberships, error } = await supabase
     .from('class_members')
-    .select('class_id, classes(id, name, level, schedule, profiles(display_name))')
+    .select(
+      'class_id, classes(id, name, level, schedule, profiles!classes_teacher_id_fkey(display_name))',
+    )
     .eq('student_id', profile.id)
     .order('joined_at', { ascending: false });
   if (error) throw new Error(error.message);
