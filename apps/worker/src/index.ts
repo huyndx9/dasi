@@ -1,5 +1,6 @@
 import { createLlmProvider } from '@dasi/providers';
 import { Worker } from 'bullmq';
+import { Redis } from 'ioredis';
 import { loadEnv } from './env';
 import { dispatch, LESSON_QUEUE, type JobHandlers } from './jobs';
 
@@ -14,15 +15,21 @@ const handlers: JobHandlers = {
   },
 };
 
+// BullMQ 6 needs a ready client in ESM; workers must not cap retries per request.
+const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
+
 const worker = new Worker(LESSON_QUEUE, (job) => dispatch(handlers, job.name, job.data), {
-  connection: { url: env.REDIS_URL },
+  connection,
 });
 
 worker.on('failed', (job, err) => console.error(`${job?.name} ${job?.id} lỗi:`, err.message));
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
-    void worker.close().then(() => process.exit(0));
+    void worker
+      .close()
+      .then(() => connection.quit())
+      .then(() => process.exit(0));
   });
 }
 
