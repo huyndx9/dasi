@@ -42,7 +42,7 @@ flowchart LR
 5. Kết quả `final` → lưu `segments` → gọi dịch song song sang `target_langs` của lớp → lưu `segment_translations` → phát cho học sinh theo ngôn ngữ của từng người.
 6. Học sinh "Giữ để hỏi": audio ngắn → STT theo tiếng mẹ đẻ → dịch sang tiếng Hàn → lưu `questions` → đẩy cho giáo viên.
 7. Kết thúc → lesson `status = processing` → đẩy job `lesson.finalize` vào queue.
-8. Worker: tóm tắt, trích từ vựng/ngữ pháp kèm cấp TOPIK, tạo bài tập (JSON theo schema zod), dịch học liệu sang các ngôn ngữ của lớp → `status = review`.
+8. Worker: tóm tắt, trích từ vựng/ngữ pháp kèm cấp TOPIK, tạo bài tập (JSON theo schema zod), dịch học liệu sang các ngôn ngữ của lớp → `status = review`. Job `lesson.finalize` (`apps/worker/src/finalize.ts`) chỉ chạy khi buổi học đang `processing` nên chạy lại an toàn; lỗi ghi vào `lessons.processing_error`; bên đẩy job dùng `lessonJobOptions()` (thử lại tối đa 3 lần, job id theo buổi học). Worker đọc/ghi bằng service role (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
 9. Giáo viên duyệt → `status = published` → học sinh nhận thông báo.
 
 ### Giao thức WebSocket (`apps/realtime`)
@@ -93,7 +93,7 @@ export interface LlmProvider {
 }
 ```
 
-Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. LLM dùng OpenAI (`openai.ts`: `translate` dùng `LLM_MODEL_FAST` và trả JSON theo từng mã ngôn ngữ; `complete` dùng `LLM_MODEL_QUALITY` với JSON schema sinh từ zod, kết quả được kiểm tra lại bằng zod). Adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
+Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. LLM dùng OpenAI (`openai.ts`: `translate` dùng `LLM_MODEL_FAST` và trả JSON theo từng mã ngôn ngữ; `complete` dùng `LLM_MODEL_QUALITY` với JSON schema sinh từ zod, kết quả được kiểm tra lại bằng zod). STT có adapter OpenAI realtime transcription (`openai-stt.ts`, `STT_PROVIDER=openai` + `STT_MODEL`): mở WebSocket `intent=transcription`, đổi audio PCM 16 kHz sang 24 kHz (OpenAI chỉ nhận 24 kHz), để server VAD tách câu; delta → `partial`, câu hoàn tất → `final` theo đúng thứ tự nói, thời điểm lấy từ VAD. Từ vựng bài học (`context`) được gửi làm `prompt`. Adapter này không tách người nói (`speaker` để trống). Adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
 
 ## Mô hình dữ liệu (rút gọn)
 
@@ -106,7 +106,8 @@ Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua bi�
 | `segments` | `id`, `lesson_id`, `seq`, `speaker_label`, `speaker_profile_id`, `source` (`mic` \| `tab`), `lang`, `text`, `start_ms`, `end_ms`, `edited` bool. Chỉ lưu câu `final`; `(lesson_id, seq)` duy nhất |
 | `segment_translations` | `segment_id`, `lang`, `text` |
 | `questions` | `id`, `lesson_id`, `student_id`, `orig_lang`, `orig_text`, `ko_text`, `status` (`open` \| `answered`), `pinned` |
-| `vocab_items` | `id`, `lesson_id` / `class_id`, `ko`, `pos`, `topik_level`, `example_ko`, `segment_id` |
+| `lesson_summaries` | `lesson_id`, `lang` (`ko` + từng ngôn ngữ của buổi học), `text`, `edited` |
+| `vocab_items` | `id`, `lesson_id`, `position`, `ko`, `pos` (`noun` \| `verb` \| `adjective` \| `adverb` \| `expression` \| `grammar` \| `other`), `topik_level`, `example_ko` (câu trong bài), `segment_id`, `edited`; `(lesson_id, ko)` duy nhất |
 | `vocab_translations` | `vocab_id`, `lang`, `meaning` |
 | `grammar_items` | `id`, `lesson_id`, `pattern`, `example_ko`, `note` + bảng dịch tương tự |
 | `assignments` | `id`, `class_id`, `lesson_id`, `due_at`, `items` jsonb, `status` |

@@ -13,7 +13,7 @@ export function lessonFinalizeJobOptions(lessonId: string) {
   return {
     jobId: `${LESSON_FINALIZE_JOB}-${lessonId}`,
     attempts: 3,
-    backoff: { type: 'exponential' as const, delay: 10_000 },
+    backoff: { type: 'exponential' as const, delay: 30_000 },
     removeOnComplete: 1000,
     removeOnFail: 1000,
   };

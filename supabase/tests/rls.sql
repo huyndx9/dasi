@@ -1,5 +1,6 @@
--- RLS checks for profiles, classes, class_members. Runs after auth-stub.sql and
--- all migrations; any failed check raises and stops psql (ON_ERROR_STOP).
+-- RLS checks for profiles, classes, class_members, lessons and lesson materials.
+-- Runs after auth-stub.sql and all migrations; any failed check raises and stops psql
+-- (ON_ERROR_STOP).
 
 create function pg_temp.act_as(p_user uuid) returns void language plpgsql as $$
 begin
@@ -233,4 +234,79 @@ select pg_temp.act_as(null);
 select pg_temp.check(
   (select count(*) from public.lessons) + (select count(*) from public.segments) = 0,
   'anon sees no lessons or segments');
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- Lesson materials (issue #13): the worker writes them with the service role while the
+-- lesson is in review; only the teacher sees them until the lesson is published.
+-- ---------------------------------------------------------------------------
+insert into public.lessons (id, class_id, title, format, sources, target_langs, status)
+values ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+  'Bài 8', 'room', '{mic}', '{zh}', 'processing');
+insert into public.segments (id, lesson_id, seq, source, text, start_ms, end_ms) values
+  ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', 0, 'mic',
+   '할인 좀 해 주세요.', 0, 1800);
+
+set role service_role;
+insert into public.lesson_summaries (lesson_id, lang, text) values
+  ('20000000-0000-0000-0000-000000000003', 'ko', '할인을 요청하는 표현을 배웠어요.'),
+  ('20000000-0000-0000-0000-000000000003', 'zh', '学习了请求打折的表达。');
+insert into public.vocab_items (id, lesson_id, position, ko, pos, topik_level, example_ko, segment_id)
+values ('40000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000003', 0, '할인',
+  'noun', 2, '할인 좀 해 주세요.', '30000000-0000-0000-0000-000000000003');
+insert into public.vocab_translations (vocab_id, lang, meaning) values
+  ('40000000-0000-0000-0000-000000000001', 'zh', '打折');
+update public.lessons set status = 'review', processing_error = null
+  where id = '20000000-0000-0000-0000-000000000003';
+reset role;
+
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(
+  (select count(*) from public.lesson_summaries) = 2
+    and (select count(*) from public.vocab_items) = 1
+    and (select meaning from public.vocab_translations) = '打折',
+  'teacher reads the materials of a lesson in review');
+update public.vocab_items set topik_level = 1, edited = true
+  where id = '40000000-0000-0000-0000-000000000001';
+update public.lesson_summaries set text = '할인 표현', edited = true
+  where lesson_id = '20000000-0000-0000-0000-000000000003' and lang = 'ko';
+select pg_temp.check(
+  (select topik_level from public.vocab_items) = 1
+    and (select text from public.lesson_summaries where lang = 'ko') = '할인 표현',
+  'teacher edits vocabulary and summary before publishing');
+reset role;
+
+select pg_temp.act_as('00000000-0000-0000-0000-000000000001');
+select pg_temp.check(
+  (select count(*) from public.lesson_summaries) + (select count(*) from public.vocab_items)
+    + (select count(*) from public.vocab_translations) = 0,
+  'member does not see materials of a lesson in review');
+do $$ begin
+  insert into public.vocab_items (lesson_id, position, ko)
+  values ('20000000-0000-0000-0000-000000000002', 0, '가짜');
+  raise exception 'RLS check failed: student wrote vocabulary';
+exception when insufficient_privilege then raise notice 'ok - students cannot write vocabulary';
+end $$;
+reset role;
+
+update public.lessons set status = 'published' where id = '20000000-0000-0000-0000-000000000003';
+select pg_temp.act_as('00000000-0000-0000-0000-000000000001');
+select pg_temp.check(
+  (select count(*) from public.lesson_summaries) = 2
+    and (select ko from public.vocab_items) = '할인'
+    and (select meaning from public.vocab_translations) = '打折',
+  'member reads the materials once the lesson is published');
+update public.vocab_items set ko = '가짜';
+reset role;
+select pg_temp.check(
+  (select ko from public.vocab_items) = '할인', 'students cannot edit vocabulary');
+
+select pg_temp.act_as('00000000-0000-0000-0000-000000000002');
+select pg_temp.check(
+  (select count(*) from public.lesson_summaries) + (select count(*) from public.vocab_items) = 0,
+  'non-member sees no lesson materials');
+reset role;
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check(
+  (select count(*) from public.vocab_translations) = 0, 'other teacher sees no lesson materials');
 reset role;

@@ -11,11 +11,19 @@ const roles = [
   { value: 'student', title: 'onboarding.student', desc: 'onboarding.studentDesc' },
 ] as const;
 
-export function OnboardingForm({ defaultLanguage }: { defaultLanguage: string | null }) {
+export function OnboardingForm({
+  defaultLanguage,
+  next,
+}: {
+  defaultLanguage: string | null;
+  /** Where to go after onboarding, e.g. the invite link that brought the user here. */
+  next: string;
+}) {
   const [state, action, pending] = useActionState(completeOnboarding, {});
 
   return (
     <form action={action} className="group flex flex-col gap-5">
+      <input type="hidden" name="next" value={next} />
       <fieldset className="flex flex-col gap-3">
         <legend className="sr-only">{tr('onboarding.title')}</legend>
         {roles.map((r) => (

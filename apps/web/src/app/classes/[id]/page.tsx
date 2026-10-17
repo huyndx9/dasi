@@ -5,12 +5,13 @@ import { headers } from 'next/headers';
 import QRCode from 'qrcode';
 import { AppShell } from '@/components/app-shell';
 import { LanguageBar } from '@/components/language-bar';
-import { Card, cx, Eyebrow, LangChip, LangDot } from '@/components/ui';
+import { btn, Card, cx, Eyebrow, LangChip, LangDot } from '@/components/ui';
 import { requireSession } from '@/lib/auth';
 import { languageDistribution } from '@/lib/classes';
 import { locale, tr } from '@/lib/i18n';
 import { joinUrl } from '@/lib/routes';
 import { CopyButton } from './copy-button';
+import { LessonsTab } from './lessons-tab';
 
 const tabs = [
   { key: 'students', label: 'classDetail.tabStudents' },
@@ -38,6 +39,15 @@ export default async function ClassDetailPage({
     .maybeSingle();
   if (!cls) notFound();
 
+  const lessons =
+    tab === 'lessons'
+      ? await supabase
+          .from('lessons')
+          .select('id, title, topic, status, started_at, ended_at, target_langs')
+          .eq('class_id', cls.id)
+          .order('started_at', { ascending: false })
+      : null;
+
   const h = await headers();
   const origin = `${h.get('x-forwarded-proto') ?? 'http'}://${h.get('x-forwarded-host') ?? h.get('host')}`;
   const qr = await QRCode.toString(joinUrl(origin, cls.invite_code), {
@@ -58,11 +68,16 @@ export default async function ClassDetailPage({
       <Link href="/classes" className="mb-2 inline-block text-sm text-muted hover:text-fg">
         ← {tr('classDetail.back')}
       </Link>
-      <header className="mb-5 flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">{cls.name}</h1>
-        <p className="text-sm text-muted">
-          {[cls.level, cls.schedule, cls.textbook].filter(Boolean).join(' · ')}
-        </p>
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold">{cls.name}</h1>
+          <p className="text-sm text-muted">
+            {[cls.level, cls.schedule, cls.textbook].filter(Boolean).join(' · ')}
+          </p>
+        </div>
+        <Link href={`/lessons/new?class=${cls.id}`} className={cx(btn.base, btn.live)}>
+          + {tr('classDetail.newLesson')}
+        </Link>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -88,7 +103,7 @@ export default async function ClassDetailPage({
           </nav>
           <div className="p-4">
             {tab === 'lessons' ? (
-              <p className="text-muted">{tr('classDetail.noLessons')}</p>
+              <LessonsTab lessons={lessons?.data ?? []} failed={!!lessons?.error} />
             ) : members.length === 0 ? (
               <p className="text-muted">
                 {tr('classDetail.noStudents', { code: cls.invite_code })}
