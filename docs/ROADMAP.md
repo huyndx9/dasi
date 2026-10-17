@@ -23,7 +23,7 @@ Mỗi mục là một issue GitHub. Đánh dấu khi đã merge. Mã trong ngo�
 - [ ] Dịch song song final segment sang ngôn ngữ của lớp (VI, ZH, EN)
 - [ ] Màn hình lớp trực tiếp cho giáo viên (L1–L5)
 - [ ] Màn hình lớp trực tiếp cho học sinh trên điện thoại, tra từ (S2, S3)
-- [ ] Worker `lesson.finalize`: tóm tắt + trích từ vựng
+- [x] Worker `lesson.finalize`: tóm tắt + trích từ vựng · ngữ pháp và bài tập làm sau
 - [ ] Chi tiết buổi học, duyệt và gửi cho lớp (D1–D3)
 - [ ] Trang chủ học sinh, xem lại buổi học (S1, S6)
 - [ ] Đếm phút STT và token LLM theo buổi (`usage_events`)

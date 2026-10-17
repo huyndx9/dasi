@@ -7,6 +7,9 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   LLM_MODEL_FAST: z.string().optional(),
   LLM_MODEL_QUALITY: z.string().optional(),
+  // Service role: bypasses RLS, server only. Needed to read segments and write materials.
+  NEXT_PUBLIC_SUPABASE_URL: z.url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

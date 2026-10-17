@@ -130,6 +130,9 @@ importers:
       '@dasi/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@supabase/supabase-js':
+        specifier: ^2.118.0
+        version: 2.118.0
       bullmq:
         specifier: ^6.3.15
         version: 6.3.15(ioredis@6.0.0)
