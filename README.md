@@ -150,6 +150,13 @@ LLM_MODEL_FAST=<model nhanh, dùng cho dịch realtime>
 LLM_MODEL_QUALITY=<model tốt hơn, dùng cho học liệu sau buổi học>
 ```
 
+Nhận dạng giọng nói bằng OpenAI (realtime transcription) thì thêm:
+
+```bash
+STT_PROVIDER=openai
+STT_MODEL=<model nhận dạng giọng nói, ví dụ gpt-4o-transcribe>
+```
+
 Realtime gateway và worker báo lỗi ngay khi khởi động nếu thiếu một trong các biến trên.
 
 ### Lệnh thường dùng
