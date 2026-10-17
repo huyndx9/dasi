@@ -81,3 +81,14 @@ pnpm db:seed
 - Match the visual language of `design/prototype-v2.html` (tokens listed in `docs/UI-UX.md`).
 - When a requirement is ambiguous, check `docs/SPEC.md`; if still unclear, ask instead of guessing.
 - UI copy is Vietnamese by default, plain and specific ("Bắt đầu buổi học", "Đã gửi câu hỏi").
+
+## End of every session: open the app for the owner
+
+The project owner reviews the real app after every work session and cannot reach `localhost` in a cloud container. Before ending a session that changed the app:
+
+1. Run the checks (`pnpm lint && pnpm typecheck && pnpm test`, plus `pnpm test:e2e` when UI changed).
+2. Build and start the web app (`pnpm --filter web build && pnpm --filter web start`; without real Supabase access use `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=x`). Also start `realtime` / `worker` and hit their entry points when they changed.
+3. `node apps/web/scripts/screenshots.mjs http://localhost:3000 <scratchpad>/shots` — every page at 390px and desktop, light and dark; it reports HTTP status, horizontal overflow and console errors. Add new pages to its `pages` list.
+4. Write `notes.json` (commit, date, what changed, what could not be checked or needs the owner) and run `node apps/web/scripts/preview-page.mjs <shots> notes.json <scratchpad>/preview.html`.
+5. Publish it with the Artifact tool to the **same** preview URL every time: https://claude.ai/artifact/LHKT2oRuBzWR5cZmhYYHX7 (read it first in a new conversation, then publish with `url`).
+6. Give the owner that link with a short list of what to look at. Say plainly which screens could not be shown and why.
