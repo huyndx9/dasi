@@ -10,6 +10,7 @@
  *    turns codes into words (packages/i18n), never the server.
  */
 import { z } from 'zod';
+import { FALLBACK_LANGUAGE, type LanguageCode } from './languages';
 import { audioSourceSchema, segmentSchema } from './schemas';
 
 export const AUDIO_FORMAT = { encoding: 'pcm_s16le', sampleRate: 16_000, channels: 1 } as const;
@@ -58,6 +59,18 @@ export const realtimeErrorCodes = [
 ] as const;
 export type RealtimeErrorCode = (typeof realtimeErrorCodes)[number];
 
+/**
+ * The subtitle language a student receives: their mother tongue when the lesson
+ * translates into it, else English when available (SPEC §7), else none (Korean only).
+ */
+export function subtitleLanguageFor(
+  motherTongue: string | null | undefined,
+  targetLangs: readonly string[],
+): string | null {
+  if (motherTongue && targetLangs.includes(motherTongue)) return motherTongue;
+  return targetLangs.includes(FALLBACK_LANGUAGE) ? FALLBACK_LANGUAGE : null;
+}
+
 export type ServerMessage =
   | {
       type: 'ready';
@@ -65,9 +78,20 @@ export type ServerMessage =
       role: 'teacher' | 'student';
       status: RoomStatus;
       targetLangs: string[];
+      /**
+       * Students: the one language their translations arrive in (subtitleLanguageFor),
+       * or null for Korean only. Teachers: null, they receive every target language.
+       */
+      language: string | null;
+      /** Recent finals, with translations already filtered to `language` for students. */
       recent: LiveSegment[];
     }
   | { type: 'segment'; segment: LiveSegment }
+  /**
+   * Translations of a final, sent after it (finals go out as soon as they are saved).
+   * Students get only their language; a final may never get one if translation fails.
+   */
+  | { type: 'translation'; seq: number; translations: Partial<Record<LanguageCode, string>> }
   | { type: 'status'; status: RoomStatus }
   /** Teachers only: students currently connected. */
   | { type: 'presence'; students: number }

@@ -1,4 +1,9 @@
-import { createLlmProvider, createSttProvider, type SttProvider } from '@dasi/providers';
+import {
+  createLlmProvider,
+  createSttProvider,
+  type LlmProvider,
+  type SttProvider,
+} from '@dasi/providers';
 import { MAX_AUDIO_FRAME_BYTES } from '@dasi/shared';
 import websocket from '@fastify/websocket';
 import Fastify from 'fastify';
@@ -13,8 +18,13 @@ export interface AppDeps {
   store: LessonStore | null;
   queue: FinalizeQueue | null;
   stt: SttProvider;
+  llm: LlmProvider;
   helloTimeoutMs?: number;
+  translateTimeoutMs?: number;
 }
+
+/** Budget in docs/ARCHITECTURE.md is 1.2 s; past this a translation is no longer useful live. */
+const TRANSLATE_TIMEOUT_MS = 5_000;
 
 /** Real dependencies from the environment. Missing Supabase or Redis settings disable that part. */
 export function depsFromEnv(env: Env): AppDeps {
@@ -25,14 +35,14 @@ export function depsFromEnv(env: Env): AppDeps {
         : null,
     queue: env.REDIS_URL ? new BullFinalizeQueue(env.REDIS_URL) : null,
     stt: createSttProvider(env),
+    llm: createLlmProvider(env),
   };
 }
 
 export function buildApp(env: Env, overrides: Partial<AppDeps> = {}) {
   const app = Fastify({ logger: { level: env.LOG_LEVEL } });
 
-  // Fail at startup, not on the first lesson, if a provider is misconfigured.
-  createLlmProvider(env);
+  // depsFromEnv fails at startup, not on the first lesson, if a provider is misconfigured.
   const deps = { ...depsFromEnv(env), ...overrides };
   if (!deps.store) {
     app.log.warn(
@@ -41,7 +51,14 @@ export function buildApp(env: Env, overrides: Partial<AppDeps> = {}) {
   }
 
   const rooms = deps.store
-    ? new RoomRegistry({ store: deps.store, queue: deps.queue, stt: deps.stt, log: app.log })
+    ? new RoomRegistry({
+        store: deps.store,
+        queue: deps.queue,
+        stt: deps.stt,
+        llm: deps.llm,
+        log: app.log,
+        translateTimeoutMs: deps.translateTimeoutMs ?? TRANSLATE_TIMEOUT_MS,
+      })
     : null;
 
   app.get('/health', async () => ({

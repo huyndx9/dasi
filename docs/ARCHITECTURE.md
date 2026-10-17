@@ -55,6 +55,7 @@ flowchart LR
 - **Phụ đề:** `partial` phát ngay, không lưu; `final` được đánh `seq` liên tục theo buổi học (tiếp nối sau khi kết nối lại), lưu `segments` rồi mới phát. Thời gian của câu tính theo mốc `started_at` của buổi học. Người vào muộn nhận 30 câu `final` gần nhất trong tin `ready`.
 - **Điều khiển (giáo viên):** `pause` / `resume` (bỏ qua âm thanh khi tạm dừng, phát `status`), `end`: chốt các câu đang dở → `status = processing` → đẩy job `lesson.finalize` (`lessonFinalizeJobOptions` trong `packages/shared/src/jobs.ts`, mỗi buổi một job) → đóng mọi kết nối với mã 4000.
 - **Sĩ số:** giáo viên nhận `{ type: 'presence', students }` mỗi khi học sinh vào hoặc ra.
+- **Bản dịch (#8):** câu `final` được phát ngay bằng tiếng Hàn, rồi dịch **một lần** sang mọi `target_langs` (`LlmProvider.translate`, model nhanh, giới hạn 5 s), lưu `segment_translations` và gửi `{ type: 'translation', seq, translations }`. Giáo viên nhận mọi ngôn ngữ; mỗi học sinh chỉ nhận ngôn ngữ của mình theo `subtitleLanguageFor()`: tiếng mẹ đẻ nếu buổi học có, không thì tiếng Anh, không có cả hai thì chỉ tiếng Hàn. Ngôn ngữ đó được báo trong `ready.language`. Dịch lỗi hoặc quá hạn thì học sinh vẫn có câu tiếng Hàn. Khi kết thúc, gateway chờ các bản dịch đang chạy xong rồi mới đặt `processing`.
 
 ### Ngân sách độ trễ
 

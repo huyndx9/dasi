@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { lessonFinalizeJobOptions } from './jobs';
-import { clientMessageSchema, liveSegmentSchema } from './realtime';
+import { clientMessageSchema, liveSegmentSchema, subtitleLanguageFor } from './realtime';
 
 describe('clientMessageSchema', () => {
   it('accepts hello for teachers (with source) and students', () => {
@@ -44,5 +44,17 @@ describe('lessonFinalizeJobOptions', () => {
     expect(opts.jobId).toBe('lesson.finalize-20000000-0000-4000-8000-000000000001');
     expect(opts.jobId).not.toContain(':');
     expect(opts.attempts).toBe(3);
+  });
+});
+
+describe('subtitleLanguageFor', () => {
+  it('uses the mother tongue when the lesson translates into it', () => {
+    expect(subtitleLanguageFor('zh', ['vi', 'zh', 'en'])).toBe('zh');
+  });
+
+  it('falls back to English, then to Korean only', () => {
+    expect(subtitleLanguageFor('uz', ['vi', 'en'])).toBe('en');
+    expect(subtitleLanguageFor(null, ['vi', 'en'])).toBe('en');
+    expect(subtitleLanguageFor('uz', ['vi', 'zh'])).toBeNull();
   });
 });

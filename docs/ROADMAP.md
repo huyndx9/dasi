@@ -21,7 +21,7 @@ Mỗi mục là một issue GitHub. Đánh dấu khi đã merge. Mã trong ngo�
 - [x] Tạo buổi học 3 bước với kiểm tra thiết bị (mục 3, P0) · "nói thử một câu" chờ realtime (#7), ước tính phút AI chờ #16
 - [x] Adapter STT OpenAI realtime transcription (`STT_PROVIDER=openai`) · chưa đo độ trễ thật, xem `docs/decisions/001-stt-provider.md`
 - [x] Realtime gateway: WebSocket, SttProvider, partial/final, lưu segment (#7)
-- [ ] Dịch song song final segment sang ngôn ngữ của lớp (VI, ZH, EN)
+- [x] Dịch song song final segment sang ngôn ngữ của lớp (VI, ZH, EN) (#8)
 - [ ] Màn hình lớp trực tiếp cho giáo viên (L1–L5)
 - [ ] Màn hình lớp trực tiếp cho học sinh trên điện thoại, tra từ (S2, S3)
 - [x] Worker `lesson.finalize`: tóm tắt + trích từ vựng · ngữ pháp và bài tập làm sau

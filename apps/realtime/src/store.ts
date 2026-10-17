@@ -8,6 +8,8 @@ export interface LessonAccess {
   sources: AudioSource[];
   targetLangs: string[];
   startedAt: Date;
+  /** Students: mother tongue chosen in this class (class_members). Teachers: null. */
+  motherTongue: string | null;
 }
 
 /** Persistence used by the gateway. The Supabase implementation uses the service role. */
@@ -18,7 +20,9 @@ export interface LessonStore {
   loadAccess(lessonId: string, userId: string): Promise<LessonAccess | null>;
   /** Seq for the next final segment (0 for a new lesson; continues after a reconnect). */
   nextSeq(lessonId: string): Promise<number>;
-  saveFinal(lessonId: string, segment: LiveSegment): Promise<void>;
+  /** Stores a final segment and returns its id (segment_translations reference it). */
+  saveFinal(lessonId: string, segment: LiveSegment): Promise<string>;
+  saveTranslations(segmentId: string, translations: Record<string, string>): Promise<void>;
   markProcessing(lessonId: string, endedAt: Date): Promise<void>;
 }
 
