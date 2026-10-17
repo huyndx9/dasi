@@ -25,7 +25,7 @@
   "login.demoDefaultName": "Guest",
   "login.demoSubmit": "Try it",
   "login.demoHint": "Test build: every try creates a new user. To try teacher and student together, open a second private window.",
-  "login.demoError": "Could not start a trial session. Check that Supabase has \"Allow anonymous sign-ins\" turned on (docs/DEPLOY.md, step 2).",
+  "login.demoError": "Could not start a trial session. In Supabase → Authentication → Sign In / Providers, turn on “Allow anonymous sign-ins” and try again.",
   "login.or": "or",
   "onboarding.title": "How will you use Dasi?",
   "onboarding.teacher": "Teacher",

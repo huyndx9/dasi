@@ -25,7 +25,7 @@
   "login.demoDefaultName": "Khách",
   "login.demoSubmit": "Vào thử",
   "login.demoHint": "Bản thử: mỗi lần vào thử là một người dùng mới. Muốn thử cả giáo viên và học sinh, mở thêm một cửa sổ ẩn danh.",
-  "login.demoError": "Không vào thử được. Kiểm tra Supabase đã bật \"Allow anonymous sign-ins\" (docs/DEPLOY.md, bước 2).",
+  "login.demoError": "Không vào thử được. Trong Supabase → Authentication → Sign In / Providers, bật “Allow anonymous sign-ins” rồi thử lại.",
   "login.or": "hoặc",
   "onboarding.title": "Bạn dùng Dasi với vai trò nào?",
   "onboarding.teacher": "Giáo viên",
