@@ -45,11 +45,12 @@ export async function createClass(_prev: FormState, formData: FormData): Promise
 }
 
 export async function joinClass(_prev: FormState, formData: FormData): Promise<FormState> {
-  const { supabase } = await requireSession('/join', 'student');
+  const { supabase, profile } = await requireSession('/join', 'student');
 
   const code = inviteCodeSchema.safeParse(formData.get('code') ?? '');
   if (!code.success) return { error: tr('join.errorCode') };
-  const lang = languageCodeSchema.safeParse(formData.get('motherTongue') ?? '');
+  // Chosen once at onboarding and changed only in settings, never per class.
+  const lang = languageCodeSchema.safeParse(profile.mother_tongue ?? '');
   if (!lang.success) return { error: tr('join.errorLanguage') };
   if (formData.get('consent') !== 'on') return { error: tr('join.errorConsent') };
 
@@ -64,15 +65,15 @@ export async function joinClass(_prev: FormState, formData: FormData): Promise<F
 }
 
 export async function setMotherTongue(formData: FormData) {
-  const { supabase, profile } = await requireSession('/home', 'student');
+  const { supabase, profile } = await requireSession('/settings', 'student');
   const lang = languageCodeSchema.safeParse(formData.get('motherTongue') ?? '');
-  if (!lang.success) redirect('/home');
+  if (!lang.success) redirect('/settings');
 
   await supabase.from('profiles').update({ mother_tongue: lang.data }).eq('id', profile.id);
   await supabase
     .from('class_members')
     .update({ mother_tongue: lang.data })
     .eq('student_id', profile.id);
-  revalidatePath('/home');
-  redirect('/home?saved=language');
+  revalidatePath('/', 'layout');
+  redirect('/settings?saved=language');
 }

@@ -20,7 +20,8 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
     ? [{ href: '/classes', label: tr('nav.classes') }]
     : [
         { href: '/home', label: tr('nav.home') },
-        { href: '/join', label: tr('nav.join') },
+        // Joining a class starts from the button on the home page; phones have no room for a third link.
+        { href: '/settings', label: tr('nav.settings') },
       ];
   const initial = (profile.display_name.trim()[0] ?? '?').toUpperCase();
 
