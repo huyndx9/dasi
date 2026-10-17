@@ -2,8 +2,15 @@ import path from 'node:path';
 import { loadEnvConfig } from '@next/env';
 import type { NextConfig } from 'next';
 
-// The monorepo keeps one .env.local at the root (README → Cài đặt).
-loadEnvConfig(path.resolve(import.meta.dirname, '../..'));
+// The monorepo keeps one .env.local at the root (README → Cài đặt). Next has already
+// loaded apps/web's env files before reading this config, and @next/env returns that
+// cached result unless forceReload is set, so without it the root file is ignored.
+loadEnvConfig(
+  path.resolve(import.meta.dirname, '../..'),
+  process.env.NODE_ENV !== 'production',
+  console,
+  true,
+);
 
 // GitHub Codespaces serves the app from https://<name>-3000.app.github.dev; allow that
 // host only when running there (.devcontainer/).
