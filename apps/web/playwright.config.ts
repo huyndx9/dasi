@@ -2,6 +2,16 @@ import { defineConfig, devices } from '@playwright/test';
 
 const port = 3000;
 
+/**
+ * Placeholder Supabase project for e2e tests. Nothing listens there: the tests only
+ * cover signed-out flows, which never need Supabase to answer. CI builds with the
+ * same values (.github/workflows/ci.yml), since NEXT_PUBLIC_* are inlined at build.
+ */
+export const e2eSupabaseEnv = {
+  NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321',
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-placeholder-key',
+};
+
 export default defineConfig({
   testDir: 'e2e',
   forbidOnly: !!process.env.CI,
@@ -29,5 +39,6 @@ export default defineConfig({
     command: process.env.CI ? 'pnpm start' : 'pnpm dev',
     port,
     reuseExistingServer: !process.env.CI,
+    env: e2eSupabaseEnv,
   },
 });

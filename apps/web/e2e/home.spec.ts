@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('home page introduces Dasi and lists subtitle languages', async ({ page }) => {
+test('landing page introduces Dasi and lists subtitle languages', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Dasi' })).toBeVisible();
 
-  const languages = page.getByRole('region', { name: 'Ngôn ngữ phụ đề' }).getByRole('listitem');
+  await expect(page.getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login');
+
+  const languages = page.getByRole('list', { name: 'Ngôn ngữ phụ đề' }).getByRole('listitem');
   await expect(languages).toHaveCount(8);
   await expect(languages.filter({ hasText: 'Tiếng Việt' })).not.toContainText('Beta');
   await expect(languages.filter({ hasText: 'Oʻzbekcha' })).toContainText('Beta');

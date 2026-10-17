@@ -15,12 +15,24 @@ describe('i18n', () => {
   });
 
   it('returns the requested locale', () => {
-    expect(t('vi', 'home.teacherCta')).toBe('Tôi là giáo viên');
-    expect(t('en', 'home.teacherCta')).toBe("I'm a teacher");
+    expect(t('vi', 'home.signIn')).toBe('Đăng nhập');
+    expect(t('en', 'home.signIn')).toBe('Sign in');
+  });
+
+  it('fills placeholders and leaves unknown ones', () => {
+    expect(t('vi', 'classes.studentCount', { n: 12 })).toBe('12 học sinh');
+    expect(t('en', 'classDetail.noStudents', {})).toContain('{code}');
+  });
+
+  it('keeps the same placeholders in every locale', () => {
+    const names = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+    for (const key of Object.keys(vi) as (keyof typeof vi)[]) {
+      expect(names(en[key]), key).toEqual(names(vi[key]));
+    }
   });
 
   it('falls back to English for unknown locales', () => {
-    expect(t('uz', 'home.teacherCta')).toBe("I'm a teacher");
-    expect(getMessages('uz')['home.studentCta']).toBe("I'm a student");
+    expect(t('uz', 'home.signIn')).toBe('Sign in');
+    expect(getMessages('uz')['nav.join']).toBe('Join a class');
   });
 });

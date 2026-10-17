@@ -8,15 +8,16 @@ Mỗi mục là một issue GitHub. Đánh dấu khi đã merge. Mã trong ngo�
 - [x] ESLint, Prettier, TypeScript strict, Vitest, Playwright
 - [x] GitHub Actions: lint + typecheck + test cho mỗi PR (kèm build, e2e, kiểm tra migration + RLS)
 - [x] Migration đầu tiên (`profiles`, `classes`, `class_members`) + RLS
-- [ ] Tạo Supabase project (Cloud, region Seoul/Tokyo) và chạy migration
+- [x] Tạo Supabase project (`qcqqadflhiqxjkaizohc`)
+- [ ] Chạy migration trên project, bật Google provider (README → Kết nối Supabase Cloud)
 - [x] Design tokens và layout từ `design/prototype-v2.html` vào Tailwind config
 - [ ] Spike STT: so sánh Soniox / Return Zero / CLOVA / Deepgram trên 3 đoạn ghi âm lớp thật (độ trễ, lỗi nhận dạng) → ghi kết quả vào `docs/decisions/001-stt-provider.md`
 
 ## Giai đoạn 1 · MVP (tuần 2–6)
 
-- [ ] Đăng nhập Google, chọn vai trò, chọn tiếng mẹ đẻ (A1–A3)
-- [ ] Tạo lớp, mã mời + QR, vào lớp bằng mã (C1–C3)
-- [ ] Chi tiết lớp: tab Học sinh, Buổi học (C4)
+- [x] Đăng nhập Google, chọn vai trò, chọn tiếng mẹ đẻ (A1–A3)
+- [x] Tạo lớp, mã mời + QR, vào lớp bằng mã (C1–C3)
+- [ ] Chi tiết lớp: tab Học sinh, Buổi học (C4) · tab Học sinh xong; tab Buổi học chờ bảng `lessons`
 - [ ] Tạo buổi học 3 bước với kiểm tra thiết bị (mục 3, P0)
 - [ ] Realtime gateway: WebSocket, SttProvider, partial/final, lưu segment
 - [ ] Dịch song song final segment sang ngôn ngữ của lớp (VI, ZH, EN)

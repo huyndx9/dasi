@@ -40,7 +40,7 @@ Lý do chọn và quy trình thêm ngôn ngữ: [`docs/LANGUAGES.md`](docs/LANGU
 | Realtime gateway | Node.js (Fastify + WebSocket), chạy riêng vì cần kết nối lâu |
 | Xử lý nền | BullMQ + Redis |
 | Nhận giọng nói + dịch realtime | Soniox (mặc định), qua lớp `SttProvider` để đổi nhà cung cấp |
-| LLM (trợ lý, tạo học liệu) | Claude / Gemini, qua lớp `LlmProvider` |
+| LLM (dịch, trợ lý, tạo học liệu) | OpenAI, qua lớp `LlmProvider` |
 | Monorepo | pnpm workspaces + Turborepo |
 | Test | Vitest (unit), Playwright (e2e) |
 
@@ -76,7 +76,7 @@ dasi/
 - Node.js 20 LTS trở lên (khuyên dùng 22, xem `.nvmrc`), pnpm 10
 - Tài khoản Supabase, hoặc [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) + Docker để chạy local
 - Redis (local qua Docker, hoặc Upstash)
-- API key: Soniox, Anthropic (hoặc Google AI). Chưa có khoá vẫn chạy được: mặc định `STT_PROVIDER=mock`, `LLM_PROVIDER=mock`
+- OpenAI API key (dịch và tạo học liệu). Chưa có khoá vẫn chạy được: mặc định `STT_PROVIDER=mock`, `LLM_PROVIDER=mock`
 
 ### Cài đặt
 
@@ -93,6 +93,30 @@ pnpm dev                         # chạy web + realtime + worker
 Worker cần Redis (`REDIS_URL`). Realtime gateway có `GET /health` ở cổng `REALTIME_PORT` (mặc định 8787).
 
 Mở http://localhost:3000. Dữ liệu mẫu trong `supabase/seed.sql` (lớp mẫu có mã mời `HANGUL`).
+
+### Kết nối Supabase Cloud
+
+Project hiện tại: `qcqqadflhiqxjkaizohc` (URL `https://qcqqadflhiqxjkaizohc.supabase.co`).
+
+1. **Tạo bảng:** Supabase Dashboard → SQL Editor → dán toàn bộ nội dung từng file trong `supabase/migrations/` (theo thứ tự tên file) → Run. Không chạy `seed.sql` trên project thật.
+2. **Bật đăng nhập Google:**
+   - Google Cloud Console → APIs & Services → Credentials → tạo OAuth client ID loại *Web application*, thêm Authorized redirect URI `https://qcqqadflhiqxjkaizohc.supabase.co/auth/v1/callback`.
+   - Supabase → Authentication → Sign In / Providers → Google → bật, dán Client ID và Client Secret.
+   - Supabase → Authentication → URL Configuration: Site URL là địa chỉ web app (ví dụ `http://localhost:3000`), thêm `http://localhost:3000/auth/callback` (và địa chỉ deploy, ví dụ `https://<tên>.vercel.app/auth/callback`) vào Redirect URLs.
+3. **Điền `.env.local`:** `NEXT_PUBLIC_SUPABASE_URL` và `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API Keys, khoá *anon* hoặc *publishable*). Khoá này công khai được vì mọi bảng có RLS. `SUPABASE_SERVICE_ROLE_KEY` chỉ đặt ở server, không bao giờ để trong code phía trình duyệt.
+
+### Dùng OpenAI
+
+Đặt trong `.env.local` (hoặc biến môi trường của nơi deploy), không commit, không dán vào issue hay chat:
+
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+LLM_MODEL_FAST=<model nhanh, dùng cho dịch realtime>
+LLM_MODEL_QUALITY=<model tốt hơn, dùng cho học liệu sau buổi học>
+```
+
+Realtime gateway và worker báo lỗi ngay khi khởi động nếu thiếu một trong các biến trên.
 
 ### Lệnh thường dùng
 

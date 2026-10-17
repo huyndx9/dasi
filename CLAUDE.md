@@ -18,10 +18,10 @@ Core idea that shapes the architecture: **recognise Korean speech once, translat
 ## Stack
 
 - pnpm workspaces + Turborepo, TypeScript 6 strict everywhere; one root ESLint flat config; workspace packages ship TS source (Next transpiles them, tsup bundles them for realtime/worker)
-- `apps/web`: Next.js App Router, Tailwind, shadcn/ui, Supabase client
+- `apps/web`: Next.js 16 App Router (`src/proxy.ts` refreshes the Supabase session), Tailwind v4, Supabase SSR client; pages guard themselves with `requireSession()` from `src/lib/auth.ts`; mutations are server actions in `src/app/actions/`
 - `apps/realtime`: Node + Fastify + `ws`; long-lived WebSocket per audio source; streams to the STT provider and fans out subtitles to the room
 - `apps/worker`: BullMQ jobs (post-class processing)
-- `packages/providers`: `SttProvider`, `LlmProvider`, `TtsProvider` interfaces + adapters (only `mock` so far; Soniox, Anthropic, … to come)
+- `packages/providers`: `SttProvider`, `LlmProvider`, `TtsProvider` interfaces + adapters (`mock` and `openai` for LLM; STT adapter comes with the realtime gateway)
 - `packages/shared`: domain types, zod schemas, language registry
 - `packages/i18n`: UI strings (source language: Vietnamese `vi`)
 - `supabase/`: SQL migrations, RLS policies, seed data

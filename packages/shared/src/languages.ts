@@ -149,17 +149,20 @@ export const SOURCE_LANGUAGE = 'ko';
 /** Shown to a student whose mother tongue is not enabled in the class (SPEC §7). */
 export const FALLBACK_LANGUAGE: LanguageCode = 'en';
 
-const byCode = new Map<string, Language>(LANGUAGES.map((l) => [l.code, l]));
+/** A registry entry, with its code narrowed to the registered codes. */
+export type RegisteredLanguage = Language & { code: LanguageCode };
+
+const byCode = new Map<string, RegisteredLanguage>(LANGUAGES.map((l) => [l.code, l]));
 
 export function isLanguageCode(code: string): code is LanguageCode {
   return byCode.has(code);
 }
 
-export function getLanguage(code: LanguageCode): Language {
+export function getLanguage(code: LanguageCode): RegisteredLanguage {
   return byCode.get(code)!;
 }
 
 /** Languages a class can pick as subtitle targets (GA and Beta). */
-export function selectableLanguages(): Language[] {
-  return LANGUAGES.filter((l) => l.status !== 'planned');
+export function selectableLanguages(): RegisteredLanguage[] {
+  return [...byCode.values()].filter((l) => l.status !== 'planned');
 }

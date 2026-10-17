@@ -5,6 +5,10 @@ const envSchema = z.object({
   REALTIME_HOST: z.string().default('0.0.0.0'),
   STT_PROVIDER: z.string().default('mock'),
   LLM_PROVIDER: z.string().default('mock'),
+  // Read by @dasi/providers when LLM_PROVIDER=openai. Never logged or sent to clients.
+  OPENAI_API_KEY: z.string().optional(),
+  LLM_MODEL_FAST: z.string().optional(),
+  LLM_MODEL_QUALITY: z.string().optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 

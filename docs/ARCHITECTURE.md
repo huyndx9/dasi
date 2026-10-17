@@ -82,7 +82,7 @@ export interface LlmProvider {
 }
 ```
 
-Adapter đặt trong `packages/providers/src/adapters/` (`soniox.ts`, `anthropic.ts`, …). Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. Hiện mới có adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
+Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. LLM dùng OpenAI (`openai.ts`: `translate` dùng `LLM_MODEL_FAST` và trả JSON theo từng mã ngôn ngữ; `complete` dùng `LLM_MODEL_QUALITY` với JSON schema sinh từ zod, kết quả được kiểm tra lại bằng zod). Adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
 
 ## Mô hình dữ liệu (rút gọn)
 
@@ -121,5 +121,6 @@ Xem `.env.example`. Không commit `.env.local`. Mọi app đọc chung `.env.loc
 ## Quyết định còn mở
 
 - [ ] Chốt nhà cung cấp STT sau khi test Soniox, Return Zero, CLOVA Speech, Deepgram trên 3 đoạn ghi âm lớp thật
+- [x] Nhà cung cấp LLM: OpenAI (quyết định 17/10/2026)
 - [ ] Dịch bằng STT provider (nếu có sẵn) hay bằng LLM riêng
 - [ ] Mức chất lượng tối thiểu để một ngôn ngữ Beta lên chính thức
