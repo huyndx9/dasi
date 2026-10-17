@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { setMotherTongue } from '@/app/actions/classes';
 import { AppShell } from '@/components/app-shell';
-import { LanguagePicker } from '@/components/language-picker';
+import { MotherTongueLine } from '@/components/mother-tongue-line';
 import { Alert, btn, Card, cx } from '@/components/ui';
 import { requireSession } from '@/lib/auth';
 import { tr } from '@/lib/i18n';
@@ -9,13 +8,15 @@ import { tr } from '@/lib/i18n';
 export default async function StudentHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ joined?: string; saved?: string }>;
+  searchParams: Promise<{ joined?: string }>;
 }) {
-  const { joined, saved } = await searchParams;
+  const { joined } = await searchParams;
   const { supabase, profile } = await requireSession('/home', 'student');
   const { data: memberships, error } = await supabase
     .from('class_members')
-    .select('class_id, classes(id, name, level, schedule, profiles(display_name))')
+    .select(
+      'class_id, classes(id, name, level, schedule, profiles!classes_teacher_id_fkey(display_name))',
+    )
     .eq('student_id', profile.id)
     .order('joined_at', { ascending: false });
   if (error) throw new Error(error.message);
@@ -30,7 +31,6 @@ export default async function StudentHomePage({
         {joinedClass && (
           <Alert tone="success">{tr('studentHome.joined', { name: joinedClass.name })}</Alert>
         )}
-        {saved === 'language' && <Alert tone="success">{tr('studentHome.languageSaved')}</Alert>}
 
         <Card className="flex flex-col gap-3 p-5">
           <div className="flex items-center justify-between gap-3">
@@ -63,21 +63,7 @@ export default async function StudentHomePage({
           )}
         </Card>
 
-        <Card className="p-5">
-          <form action={setMotherTongue} className="flex flex-col gap-3">
-            <LanguagePicker
-              name="motherTongue"
-              defaultValue={profile.mother_tongue}
-              legend={tr('studentHome.motherTongue')}
-              hint={tr('studentHome.motherTongueHint')}
-            />
-            <div>
-              <button type="submit" className={cx(btn.base, btn.primary)}>
-                {tr('studentHome.save')}
-              </button>
-            </div>
-          </form>
-        </Card>
+        <MotherTongueLine code={profile.mother_tongue} />
       </div>
     </AppShell>
   );

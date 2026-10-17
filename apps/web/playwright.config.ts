@@ -10,6 +10,7 @@ const port = 3000;
 export const e2eSupabaseEnv = {
   NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321',
   NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-placeholder-key',
+  NEXT_PUBLIC_DEMO_LOGIN: '1',
 };
 
 export default defineConfig({

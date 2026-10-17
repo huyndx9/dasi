@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { Profile } from './supabase/database.types';
 import { createClient, type Supabase } from './supabase/server';
-import { homePathFor, loginPath } from './routes';
+import { homePathFor, loginPath, onboardingPath } from './routes';
 
 export interface Session {
   supabase: Supabase;
@@ -29,7 +29,7 @@ export async function requireSession(
 ): Promise<Session> {
   const session = await getSession();
   if (!session) redirect(loginPath(currentPath));
-  if (!session.profile.role) redirect('/onboarding');
+  if (!session.profile.role) redirect(onboardingPath(currentPath));
   if (role && session.profile.role !== role) redirect(homePathFor(session.profile.role));
   return session;
 }
