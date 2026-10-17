@@ -42,7 +42,7 @@ flowchart LR
 5. Kết quả `final` → lưu `segments` → gọi dịch song song sang `target_langs` của lớp → lưu `segment_translations` → phát cho học sinh theo ngôn ngữ của từng người.
 6. Học sinh "Giữ để hỏi": audio ngắn → STT theo tiếng mẹ đẻ → dịch sang tiếng Hàn → lưu `questions` → đẩy cho giáo viên.
 7. Kết thúc → lesson `status = processing` → đẩy job `lesson.finalize` vào queue.
-8. Worker: tóm tắt, trích từ vựng/ngữ pháp kèm cấp TOPIK, tạo bài tập (JSON theo schema zod), dịch học liệu sang các ngôn ngữ của lớp → `status = review`.
+8. Worker: tóm tắt, trích từ vựng/ngữ pháp kèm cấp TOPIK, tạo bài tập (JSON theo schema zod), dịch học liệu sang các ngôn ngữ của lớp → `status = review`. Job `lesson.finalize` (`apps/worker/src/finalize.ts`) chỉ chạy khi buổi học đang `processing` nên chạy lại an toàn; lỗi ghi vào `lessons.processing_error`; bên đẩy job dùng `lessonJobOptions()` (thử lại tối đa 3 lần, job id theo buổi học). Worker đọc/ghi bằng service role (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
 9. Giáo viên duyệt → `status = published` → học sinh nhận thông báo.
 
 ### Ngân sách độ trễ
@@ -95,7 +95,8 @@ Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua bi�
 | `segments` | `id`, `lesson_id`, `seq`, `speaker_label`, `speaker_profile_id`, `source` (`mic` \| `tab`), `lang`, `text`, `start_ms`, `end_ms`, `edited` bool. Chỉ lưu câu `final`; `(lesson_id, seq)` duy nhất |
 | `segment_translations` | `segment_id`, `lang`, `text` |
 | `questions` | `id`, `lesson_id`, `student_id`, `orig_lang`, `orig_text`, `ko_text`, `status` (`open` \| `answered`), `pinned` |
-| `vocab_items` | `id`, `lesson_id` / `class_id`, `ko`, `pos`, `topik_level`, `example_ko`, `segment_id` |
+| `lesson_summaries` | `lesson_id`, `lang` (`ko` + từng ngôn ngữ của buổi học), `text`, `edited` |
+| `vocab_items` | `id`, `lesson_id`, `position`, `ko`, `pos` (`noun` \| `verb` \| `adjective` \| `adverb` \| `expression` \| `grammar` \| `other`), `topik_level`, `example_ko` (câu trong bài), `segment_id`, `edited`; `(lesson_id, ko)` duy nhất |
 | `vocab_translations` | `vocab_id`, `lang`, `meaning` |
 | `grammar_items` | `id`, `lesson_id`, `pattern`, `example_ko`, `note` + bảng dịch tương tự |
 | `assignments` | `id`, `class_id`, `lesson_id`, `due_at`, `items` jsonb, `status` |
