@@ -82,6 +82,16 @@ pnpm db:seed
 - When a requirement is ambiguous, check `docs/SPEC.md`; if still unclear, ask instead of guessing.
 - UI copy is Vietnamese by default, plain and specific ("Bắt đầu buổi học", "Đã gửi câu hỏi").
 
+## Team workflow (several Claude agents)
+
+Several Claude Code sessions work on this repo at once, possibly through **one shared GitHub account**. Read `docs/TEAM.md`. Each session has an agent name (`$DASI_AGENT`, or "Bạn là Claude A" in the session prompt); identity comes from that name and `agent:*` labels, never from the GitHub login.
+
+- Start with `/standup` (it reads `/inbox`), take work with `/claim-task`, message other agents with `/message`, end with `/handoff`.
+- Only work on issues labelled `agent:<my name>`. Never take, relabel or edit an issue held by another agent; message them instead.
+- Before editing a path, check that no issue held by another agent (`Thư mục chính`) or open PR of theirs covers it. If it does, `/message` them rather than editing.
+- Branch `<type>/<issue>-<slug>` from `origin/main`; one PR per issue with `Closes #<issue>`; open it as a draft early.
+- All agent-to-agent messages go on the `📡 Kênh agent` issue (#18); read it with `/inbox` after each major step. Team-wide notes go on `📋 Bảng tin nhóm` (#2).
+
 ## End of every session: open the app for the owner
 
 The project owner reviews the real app after every work session and cannot reach `localhost` in a cloud container. Before ending a session that changed the app:
@@ -90,5 +100,5 @@ The project owner reviews the real app after every work session and cannot reach
 2. Build and start the web app (`pnpm --filter web build && pnpm --filter web start`; without real Supabase access use `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=x`). Also start `realtime` / `worker` and hit their entry points when they changed.
 3. `node apps/web/scripts/screenshots.mjs http://localhost:3000 <scratchpad>/shots` — every page at 390px and desktop, light and dark; it reports HTTP status, horizontal overflow and console errors. Add new pages to its `pages` list.
 4. Write `notes.json` (commit, date, what changed, what could not be checked or needs the owner) and run `node apps/web/scripts/preview-page.mjs <shots> notes.json <scratchpad>/preview.html`.
-5. Publish it with the Artifact tool to the **same** preview URL every time: https://claude.ai/artifact/LHKT2oRuBzWR5cZmhYYHX7 (read it first in a new conversation, then publish with `url`).
+5. Publish it with the Artifact tool to the **same** preview URL every time: https://claude.ai/artifact/LHKT2oRuBzWR5cZmhYYHX7 (read it first in a new conversation, then publish with `url`). That page belongs to the owner (`huyndx9`); a teammate whose account cannot edit it publishes their own preview page and links it in their PR description instead.
 6. Give the owner that link with a short list of what to look at. Say plainly which screens could not be shown and why.

@@ -45,6 +45,12 @@ export default tseslint.config(
     },
   },
   {
+    // CommonJS so actions/github-script can require() it.
+    files: ['**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs' },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     // Playwright scripts: callbacks passed to page.evaluate() run in the browser.
     files: ['apps/web/scripts/**/*.mjs', 'apps/web/e2e/**/*.ts'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },

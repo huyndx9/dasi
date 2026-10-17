@@ -13,6 +13,7 @@
     "test": "turbo run test",
     "test:e2e": "pnpm --filter web test:e2e",
     "test:db": "scripts/test-db.sh",
+    "test:scripts": "node --test .github/scripts/*.test.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate": "supabase migration up",

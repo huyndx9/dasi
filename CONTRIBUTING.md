@@ -3,7 +3,7 @@
 ## Nhánh
 
 - `main`: luôn chạy được, chỉ merge qua Pull Request.
-- Nhánh làm việc: `feat/<mô-tả-ngắn>`, `fix/<mô-tả>`, `docs/<mô-tả>`, `chore/<mô-tả>`.
+- Nhánh làm việc: `feat/<số-issue>-<mô-tả-ngắn>` (hoặc `fix/`, `docs/`, `chore/`). Mỗi nhánh gắn với một issue đã nhận bằng `/claim-task`; quy trình nhóm ở [`docs/TEAM.md`](docs/TEAM.md).
 
 ## Commit
 

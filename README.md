@@ -139,6 +139,7 @@ Realtime gateway và worker báo lỗi ngay khi khởi động nếu thiếu m�
    - `/new-feature <mô tả>`: lập kế hoạch → code → test cho một tính năng
    - `/add-language <mã>`: thêm một ngôn ngữ phụ đề mới theo checklist
    - `/pre-pr`: tự kiểm tra thay đổi trước khi mở PR
+   - `/standup`, `/claim-task`, `/message`, `/inbox`, `/handoff`: nhiều Claude cùng làm, không trùng việc, nhắn tin cho nhau (xem [`docs/TEAM.md`](docs/TEAM.md))
 4. Gợi ý bắt đầu: *"Đọc docs/SPEC.md và docs/ROADMAP.md, dựng khung monorepo theo Giai đoạn 1."*
 
 ## Đóng góp

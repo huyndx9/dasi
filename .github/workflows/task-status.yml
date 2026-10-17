@@ -1,0 +1,30 @@
+name: Task status
+
+# Keeps status:* labels on issues in sync (docs/TEAM.md):
+# assigned → in-progress · PR ready → review · closed → dependents unblocked.
+on:
+  issues:
+    types: [opened, reopened, assigned, unassigned, closed]
+  pull_request:
+    types: [opened, reopened, ready_for_review, converted_to_draft, edited, closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+concurrency:
+  group: task-status-${{ github.event.issue.number || github.event.pull_request.number }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const { run } = require('./.github/scripts/task-status.cjs');
+            await run({ github, context });
