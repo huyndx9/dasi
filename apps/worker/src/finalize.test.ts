@@ -10,7 +10,8 @@ import {
   type LessonMaterials,
   type LessonStore,
 } from './finalize';
-import { lessonJobOptions } from './jobs';
+import { LESSON_FINALIZE_JOB } from '@dasi/shared';
+import { jobSchemas } from './jobs';
 
 const lessonId = '6f1c1f7e-3a0b-4c55-9d43-1f0a0f3f2b10';
 
@@ -237,11 +238,8 @@ describe('transcriptLines', () => {
   });
 });
 
-describe('lessonJobOptions', () => {
-  it('retries a limited number of times and dedupes by lesson', () => {
-    const opts = lessonJobOptions(lessonId);
-    expect(opts.attempts).toBe(3);
-    expect(opts.jobId).toBe(`lesson.finalize-${lessonId}`);
-    expect(opts.jobId).not.toContain(':');
+describe('job contract', () => {
+  it('handles the job name the producer enqueues (@dasi/shared)', () => {
+    expect(Object.keys(jobSchemas)).toEqual([LESSON_FINALIZE_JOB]);
   });
 });

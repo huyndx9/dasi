@@ -1,26 +1,13 @@
-import type { JobsOptions } from 'bullmq';
+import { LESSON_FINALIZE_JOB } from '@dasi/shared';
 import { z } from 'zod';
 
-export const LESSON_QUEUE = 'lessons';
+// Queue name and job options are shared with the producer (apps/realtime): @dasi/shared jobs.ts.
+export { LESSON_QUEUE } from '@dasi/shared';
 
 /** Payload schemas per job name. The realtime gateway enqueues `lesson.finalize` when a lesson ends. */
 export const jobSchemas = {
-  'lesson.finalize': z.object({ lessonId: z.uuid() }),
+  [LESSON_FINALIZE_JOB]: z.object({ lessonId: z.uuid() }),
 } as const;
-
-/**
- * Options the producer passes to `queue.add`: limited retries with backoff, and the lesson id
- * as job id so ending a lesson twice queues one job.
- */
-export function lessonJobOptions(lessonId: string): JobsOptions {
-  return {
-    jobId: `lesson.finalize-${lessonId}`,
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 30_000 },
-    removeOnComplete: 1_000,
-    removeOnFail: 5_000,
-  };
-}
 
 export type JobName = keyof typeof jobSchemas;
 export type JobData<N extends JobName> = z.infer<(typeof jobSchemas)[N]>;
