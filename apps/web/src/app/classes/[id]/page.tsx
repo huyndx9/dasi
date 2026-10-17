@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import QRCode from 'qrcode';
 import { AppShell } from '@/components/app-shell';
 import { LanguageBar } from '@/components/language-bar';
-import { Card, cx, Eyebrow, LangChip, LangDot } from '@/components/ui';
+import { btn, Card, cx, Eyebrow, LangChip, LangDot } from '@/components/ui';
 import { requireSession } from '@/lib/auth';
 import { languageDistribution } from '@/lib/classes';
 import { locale, tr } from '@/lib/i18n';
@@ -58,11 +58,16 @@ export default async function ClassDetailPage({
       <Link href="/classes" className="mb-2 inline-block text-sm text-muted hover:text-fg">
         ← {tr('classDetail.back')}
       </Link>
-      <header className="mb-5 flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">{cls.name}</h1>
-        <p className="text-sm text-muted">
-          {[cls.level, cls.schedule, cls.textbook].filter(Boolean).join(' · ')}
-        </p>
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold">{cls.name}</h1>
+          <p className="text-sm text-muted">
+            {[cls.level, cls.schedule, cls.textbook].filter(Boolean).join(' · ')}
+          </p>
+        </div>
+        <Link href={`/lessons/new?class=${cls.id}`} className={cx(btn.base, btn.live)}>
+          + {tr('classDetail.newLesson')}
+        </Link>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
