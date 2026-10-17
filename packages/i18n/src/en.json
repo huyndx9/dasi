@@ -259,5 +259,19 @@
   "live.error.stt_failed": "Speech recognition is not working right now. Subtitles may be missing; try restarting the audio source.",
   "live.error.save_failed": "A sentence could not be saved. The lesson continues.",
   "live.error.end_failed": "The lesson could not be ended. Press End to try again.",
-  "live.error.sourceClosed": "The audio connection to the server closed. Press Try again."
+  "live.error.sourceClosed": "The audio connection to the server closed. Press Try again.",
+  "studentLive.ended": "ENDED",
+  "studentLive.reconnecting": "Connection lost. Reconnecting…",
+  "studentLive.fallbackEnglish": "This class does not use {language} yet. Showing English instead.",
+  "studentLive.koreanOnly": "This class does not use {language} yet. Subtitles are in Korean only.",
+  "studentLive.yourLanguage": "your mother tongue",
+  "studentLive.waiting": "Waiting for the teacher to speak. Subtitles appear here.",
+  "studentLive.paused": "The teacher paused.",
+  "studentLive.tapHint": "Tap an underlined word to see its meaning.",
+  "studentLive.endedTitle": "The lesson has ended",
+  "studentLive.endedBody": "Your teacher will send the transcript, vocabulary and summary after reviewing them.",
+  "studentLive.backHome": "Back to home",
+  "studentLive.notMember": "You have not joined this class. Join it with the code your teacher sent.",
+  "studentLive.noMeaning": "No meaning in your language yet.",
+  "studentLive.close": "Close"
 }

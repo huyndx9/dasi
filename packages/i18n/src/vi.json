@@ -259,5 +259,19 @@
   "live.error.stt_failed": "Không nhận dạng được giọng nói lúc này. Phụ đề có thể bị thiếu; thử tắt rồi bật lại nguồn âm thanh.",
   "live.error.save_failed": "Một câu không lưu được. Buổi học vẫn tiếp tục.",
   "live.error.end_failed": "Chưa kết thúc được buổi học. Bấm Kết thúc để thử lại.",
-  "live.error.sourceClosed": "Mất kết nối âm thanh với máy chủ. Bấm Thử lại."
+  "live.error.sourceClosed": "Mất kết nối âm thanh với máy chủ. Bấm Thử lại.",
+  "studentLive.ended": "ĐÃ KẾT THÚC",
+  "studentLive.reconnecting": "Mất mạng. Đang kết nối lại…",
+  "studentLive.fallbackEnglish": "Lớp này chưa bật {language}. Đang hiện tiếng Anh thay thế.",
+  "studentLive.koreanOnly": "Lớp này chưa bật {language}. Phụ đề chỉ có tiếng Hàn.",
+  "studentLive.yourLanguage": "tiếng mẹ đẻ của bạn",
+  "studentLive.waiting": "Đang chờ giáo viên nói. Phụ đề sẽ hiện ở đây.",
+  "studentLive.paused": "Giáo viên tạm dừng.",
+  "studentLive.tapHint": "Chạm vào từ có gạch chân để xem nghĩa.",
+  "studentLive.endedTitle": "Buổi học đã kết thúc",
+  "studentLive.endedBody": "Giáo viên sẽ gửi bản ghi, từ vựng và tóm tắt sau khi duyệt.",
+  "studentLive.backHome": "Về trang chủ",
+  "studentLive.notMember": "Bạn chưa vào lớp này. Vào lớp bằng mã giáo viên gửi.",
+  "studentLive.noMeaning": "Chưa có nghĩa bằng ngôn ngữ của bạn.",
+  "studentLive.close": "Đóng"
 }

@@ -142,7 +142,8 @@ export async function saveSummary(_prev: SaveState, formData: FormData): Promise
  * Called before each (re)connect, so a lesson longer than the token lifetime keeps working.
  */
 export async function getRealtimeToken(): Promise<string> {
-  const { supabase } = await requireSession('/classes', 'teacher');
+  // Teachers and students: the gateway checks the role against the lesson itself.
+  const { supabase } = await requireSession('/');
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw new Error('Phiên đăng nhập đã hết hạn');
   return data.session.access_token;
