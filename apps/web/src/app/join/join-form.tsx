@@ -1,12 +1,11 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, type ReactNode } from 'react';
 import { joinClass } from '@/app/actions/classes';
-import { LanguagePicker } from '@/components/language-picker';
 import { Alert, btn, cx } from '@/components/ui';
 import { tr } from '@/lib/i18n';
 
-export function JoinForm({ code, motherTongue }: { code: string; motherTongue: string | null }) {
+export function JoinForm({ code, languageLine }: { code: string; languageLine: ReactNode }) {
   const [state, action, pending] = useActionState(joinClass, {});
   return (
     <form action={action} className="flex flex-col gap-5">
@@ -25,11 +24,7 @@ export function JoinForm({ code, motherTongue }: { code: string; motherTongue: s
         />
         <span className="font-normal text-faint">{tr('join.codeHint')}</span>
       </label>
-      <LanguagePicker
-        name="motherTongue"
-        defaultValue={motherTongue}
-        legend={tr('join.motherTongue')}
-      />
+      {languageLine}
       <label className="flex items-start gap-3 rounded-sm bg-sunk p-3.5 text-sm">
         <input
           id="join-consent"

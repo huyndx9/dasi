@@ -16,7 +16,7 @@ Mã ưu tiên: **P0** = MVP, **P1** = ngay sau MVP, **P2** = sau đó.
 | --- | --- | --- |
 | A1 | Đăng nhập Google (Supabase Auth) | P0 |
 | A2 | Chọn vai trò sau lần đăng nhập đầu: Giáo viên / Học sinh | P0 |
-| A3 | Học sinh chọn tiếng mẹ đẻ (đổi được bất cứ lúc nào) | P0 |
+| A3 | Học sinh chọn tiếng mẹ đẻ một lần khi đăng nhập lần đầu; đổi trong Cài đặt, áp dụng cho mọi lớp | P0 |
 | A4 | Vai trò Quản lý trung tâm: lớp, giáo viên, báo cáo, gói dịch vụ | P2 |
 | A5 | Giao diện đa ngôn ngữ (chuỗi UI theo ngôn ngữ người dùng) | P1 |
 
@@ -25,7 +25,7 @@ Mã ưu tiên: **P0** = MVP, **P1** = ngay sau MVP, **P2** = sau đó.
 | ID | Tính năng | Ưu tiên |
 | --- | --- | --- |
 | C1 | Tạo lớp: tên, cấp độ, lịch, giáo trình | P0 |
-| C2 | Mã mời 6 ký tự + QR; học sinh vào lớp và chọn tiếng mẹ đẻ | P0 |
+| C2 | Mã mời 6 ký tự + QR; học sinh vào lớp bằng tiếng mẹ đẻ đã chọn (không hỏi lại) | P0 |
 | C3 | Thẻ lớp hiển thị phân bố ngôn ngữ (VI 12 · ZH 8 · EN 3) | P0 |
 | C4 | Chi tiết lớp: tab Học sinh, Buổi học, Từ vựng của lớp, Cài đặt | P0 |
 | C5 | Cài đặt lớp: cho phép "Giữ để hỏi", tự xoá bản ghi sau N ngày, tự xuất Google Drive | P1 |

@@ -81,5 +81,6 @@ export async function completeOnboarding(_prev: FormState, formData: FormData): 
     .eq('id', session.profile.id);
   if (error) return { error: tr('onboarding.errorSave') };
 
-  redirect(homePathFor(parsed.data.role));
+  // A wrong-role destination (a teacher on /join) is bounced home by that page's guard.
+  redirect(safeNext(formData.get('next')?.toString(), homePathFor(parsed.data.role)));
 }

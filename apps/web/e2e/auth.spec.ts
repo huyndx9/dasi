@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 // exists, and nothing here needs Supabase to answer.
 
 test('protected pages send signed-out visitors to login and back', async ({ page }) => {
-  for (const path of ['/classes', '/classes/new', '/home', '/join?code=HANGUL']) {
+  for (const path of ['/classes', '/classes/new', '/home', '/join?code=HANGUL', '/settings']) {
     await page.goto(path);
     await expect(page).toHaveURL(`/login?next=${encodeURIComponent(path)}`);
   }
