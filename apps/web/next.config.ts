@@ -7,6 +7,8 @@ loadEnvConfig(path.resolve(import.meta.dirname, '../..'));
 
 const config: NextConfig = {
   transpilePackages: ['@dasi/shared', '@dasi/i18n'],
+  // Trace dependencies from the monorepo root so hosted builds (Vercel) include packages/*.
+  outputFileTracingRoot: path.resolve(import.meta.dirname, '../..'),
 };
 
 export default config;

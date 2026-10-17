@@ -45,6 +45,7 @@ jobs:
           # Placeholder project, same as apps/web/playwright.config.ts.
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-placeholder-key
+          NEXT_PUBLIC_DEMO_LOGIN: '1'
       - run: pnpm test:e2e
       - if: failure()
         uses: actions/upload-artifact@v4

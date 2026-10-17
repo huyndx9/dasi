@@ -69,6 +69,29 @@ dasi/
 └─ CLAUDE.md        # Hướng dẫn cho Claude Code
 ```
 
+## Chạy thử trên máy của bạn (không cần biết lập trình)
+
+1. Cài [Node.js 22 LTS](https://nodejs.org) và [Git](https://git-scm.com/downloads). Mở Terminal (macOS) hoặc PowerShell (Windows), chạy `corepack enable` một lần để có `pnpm`.
+2. Tải code và cài thư viện:
+   ```bash
+   git clone https://github.com/huyndx9/dasi.git
+   cd dasi
+   pnpm install
+   ```
+3. Supabase Dashboard của project `qcqqadflhiqxjkaizohc`:
+   - **SQL Editor → New query:** dán toàn bộ nội dung từng file trong `supabase/migrations/` theo thứ tự tên, bấm **Run** cho từng file. Nếu Table Editor đã có bảng `profiles` và `lessons` thì bỏ qua bước này.
+   - **Authentication → Sign In / Providers:** bật **Allow anonymous sign-ins** → **Save**.
+   - **Project Settings → API Keys:** sao chép khoá **anon public** (hoặc **Publishable key**).
+4. Tạo file `.env.local` ở thư mục `dasi` với 3 dòng:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=https://qcqqadflhiqxjkaizohc.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<dán khoá vừa sao chép>
+   NEXT_PUBLIC_DEMO_LOGIN=1
+   ```
+5. Chạy `pnpm --filter web dev`, mở http://localhost:3000 → **Đăng nhập** → nhập tên → **Vào thử** → chọn **Giáo viên** → **Lớp mới**. Mở thêm một **cửa sổ ẩn danh**, vào thử với tên khác, chọn **Học sinh**, nhập mã lớp vừa tạo.
+
+Cập nhật bản mới: `git pull && pnpm install`, rồi chạy lại bước 5.
+
 ## Bắt đầu
 
 ### Yêu cầu

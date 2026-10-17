@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { signOut } from '@/app/actions/auth';
+import { demoLoginEnabled } from '@/lib/demo';
 import type { Profile } from '@/lib/supabase/database.types';
 import { tr } from '@/lib/i18n';
 import { btn, cx } from './ui';
@@ -46,6 +47,11 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            {demoLoginEnabled() && (
+              <span className="rounded-full bg-warn-soft px-2 py-0.5 text-xs font-semibold text-warn">
+                {tr('nav.demoBadge')}
+              </span>
+            )}
             <span className="hidden text-xs text-faint sm:inline">
               {teacher ? tr('nav.roleTeacher') : tr('nav.roleStudent')}
             </span>
