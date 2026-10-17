@@ -19,7 +19,7 @@ Mỗi mục là một issue GitHub. Đánh dấu khi đã merge. Mã trong ngo�
 - [x] Tạo lớp, mã mời + QR, vào lớp bằng mã (C1–C3)
 - [ ] Chi tiết lớp: tab Học sinh, Buổi học (C4) · tab Học sinh xong; tab Buổi học chờ bảng `lessons`
 - [ ] Tạo buổi học 3 bước với kiểm tra thiết bị (mục 3, P0)
-- [ ] Realtime gateway: WebSocket, SttProvider, partial/final, lưu segment
+- [x] Realtime gateway: WebSocket, SttProvider, partial/final, lưu segment (#7)
 - [ ] Dịch song song final segment sang ngôn ngữ của lớp (VI, ZH, EN)
 - [ ] Màn hình lớp trực tiếp cho giáo viên (L1–L5)
 - [ ] Màn hình lớp trực tiếp cho học sinh trên điện thoại, tra từ (S2, S3)

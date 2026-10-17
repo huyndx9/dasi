@@ -45,6 +45,17 @@ flowchart LR
 8. Worker: tóm tắt, trích từ vựng/ngữ pháp kèm cấp TOPIK, tạo bài tập (JSON theo schema zod), dịch học liệu sang các ngôn ngữ của lớp → `status = review`.
 9. Giáo viên duyệt → `status = published` → học sinh nhận thông báo.
 
+### Giao thức WebSocket (`apps/realtime`)
+
+Định nghĩa đầy đủ: `packages/shared/src/realtime.ts` (zod + kiểu TypeScript dùng chung cho trình duyệt và server).
+
+- **Kết nối:** `${NEXT_PUBLIC_REALTIME_URL}/ws/lessons/<lessonId>`. Tin đầu tiên (trong 10 s) phải là `{ type: 'hello', token, role, source? }`, với `token` là access token Supabase của người dùng. Token gửi trong tin nhắn, không đặt trong URL.
+- **Quyền:** gateway xác thực token với Supabase rồi kiểm tra trong database (service role): giáo viên của lớp hoặc thành viên lớp, đúng vai trò, buổi học đang `live`, và `source` có trong `lessons.sources`. Sai thì gửi `{ type: 'error', code }` rồi đóng với mã 44xx (`REALTIME_CLOSE`).
+- **Âm thanh:** mỗi nguồn (`mic`, `tab`) của giáo viên là một kết nối riêng, gửi khung nhị phân PCM16 16 kHz mono, tối đa 64 KB mỗi khung. Mở kết nối thứ hai cho cùng nguồn sẽ đóng kết nối cũ (4408).
+- **Phụ đề:** `partial` phát ngay, không lưu; `final` được đánh `seq` liên tục theo buổi học (tiếp nối sau khi kết nối lại), lưu `segments` rồi mới phát. Thời gian của câu tính theo mốc `started_at` của buổi học. Người vào muộn nhận 30 câu `final` gần nhất trong tin `ready`.
+- **Điều khiển (giáo viên):** `pause` / `resume` (bỏ qua âm thanh khi tạm dừng, phát `status`), `end`: chốt các câu đang dở → `status = processing` → đẩy job `lesson.finalize` (`lessonFinalizeJobOptions` trong `packages/shared/src/jobs.ts`, mỗi buổi một job) → đóng mọi kết nối với mã 4000.
+- **Sĩ số:** giáo viên nhận `{ type: 'presence', students }` mỗi khi học sinh vào hoặc ra.
+
 ### Ngân sách độ trễ
 
 | Bước | Mục tiêu |
