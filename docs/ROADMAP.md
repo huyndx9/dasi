@@ -22,7 +22,7 @@ Mỗi mục là một issue GitHub. Đánh dấu khi đã merge. Mã trong ngo�
 - [x] Adapter STT OpenAI realtime transcription (`STT_PROVIDER=openai`) · chưa đo độ trễ thật, xem `docs/decisions/001-stt-provider.md`
 - [x] Realtime gateway: WebSocket, SttProvider, partial/final, lưu segment (#7)
 - [x] Dịch song song final segment sang ngôn ngữ của lớp (VI, ZH, EN) (#8)
-- [ ] Màn hình lớp trực tiếp cho giáo viên (L1–L5)
+- [x] Màn hình lớp trực tiếp cho giáo viên (L1–L5) · panel Trợ lý, chế độ chiếu, mời học sinh làm sau
 - [ ] Màn hình lớp trực tiếp cho học sinh trên điện thoại, tra từ (S2, S3)
 - [x] Worker `lesson.finalize`: tóm tắt + trích từ vựng · ngữ pháp và bài tập làm sau
 - [x] Chi tiết buổi học, duyệt và gửi cho lớp (D1–D3) · trình phát và bấm câu để tua chờ có bản ghi âm
