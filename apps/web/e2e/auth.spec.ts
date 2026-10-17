@@ -9,6 +9,7 @@ test('protected pages send signed-out visitors to login and back', async ({ page
     '/classes/new',
     '/lessons/new',
     '/lessons/6f1c1f7e-3a0b-4c55-9d43-1f0a0f3f2b10',
+    '/lessons/6f1c1f7e-3a0b-4c55-9d43-1f0a0f3f2b10/live',
     '/home',
     '/join?code=HANGUL',
     '/settings',

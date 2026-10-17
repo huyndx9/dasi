@@ -136,3 +136,14 @@ export async function saveSummary(_prev: SaveState, formData: FormData): Promise
   revalidatePath(lessonPath(s.lessonId));
   return { saved: true };
 }
+
+/**
+ * A fresh Supabase access token for the realtime gateway's `hello` (never put in a URL).
+ * Called before each (re)connect, so a lesson longer than the token lifetime keeps working.
+ */
+export async function getRealtimeToken(): Promise<string> {
+  const { supabase } = await requireSession('/classes', 'teacher');
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) throw new Error('Phiên đăng nhập đã hết hạn');
+  return data.session.access_token;
+}
