@@ -106,19 +106,146 @@ export type Database = {
           },
         ];
       };
+      lessons: {
+        Row: {
+          id: string;
+          class_id: string;
+          title: string;
+          topic: string | null;
+          textbook: string | null;
+          format: Database['public']['Enums']['lesson_format'];
+          sources: Database['public']['Enums']['audio_source'][];
+          target_langs: string[];
+          display: Database['public']['Enums']['subtitle_display'];
+          status: Database['public']['Enums']['lesson_status'];
+          started_at: string;
+          ended_at: string | null;
+          audio_path: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          class_id: string;
+          title: string;
+          topic?: string | null;
+          textbook?: string | null;
+          format: Database['public']['Enums']['lesson_format'];
+          sources: Database['public']['Enums']['audio_source'][];
+          target_langs?: string[];
+          display?: Database['public']['Enums']['subtitle_display'];
+          status?: Database['public']['Enums']['lesson_status'];
+          started_at?: string;
+          ended_at?: string | null;
+          audio_path?: string | null;
+        };
+        Update: {
+          title?: string;
+          topic?: string | null;
+          textbook?: string | null;
+          display?: Database['public']['Enums']['subtitle_display'];
+          status?: Database['public']['Enums']['lesson_status'];
+          ended_at?: string | null;
+          audio_path?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'lessons_class_id_fkey';
+            columns: ['class_id'];
+            isOneToOne: false;
+            referencedRelation: 'classes';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      segments: {
+        Row: {
+          id: string;
+          lesson_id: string;
+          seq: number;
+          source: Database['public']['Enums']['audio_source'];
+          speaker_label: string | null;
+          speaker_profile_id: string | null;
+          lang: string;
+          text: string;
+          start_ms: number;
+          end_ms: number;
+          edited: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          lesson_id: string;
+          seq: number;
+          source: Database['public']['Enums']['audio_source'];
+          speaker_label?: string | null;
+          speaker_profile_id?: string | null;
+          lang?: string;
+          text: string;
+          start_ms: number;
+          end_ms: number;
+          edited?: boolean;
+        };
+        Update: {
+          speaker_label?: string | null;
+          speaker_profile_id?: string | null;
+          text?: string;
+          edited?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'segments_lesson_id_fkey';
+            columns: ['lesson_id'];
+            isOneToOne: false;
+            referencedRelation: 'lessons';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'segments_speaker_profile_id_fkey';
+            columns: ['speaker_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      segment_translations: {
+        Row: { segment_id: string; lang: string; text: string };
+        Insert: { segment_id: string; lang: string; text: string };
+        Update: { text?: string };
+        Relationships: [
+          {
+            foreignKeyName: 'segment_translations_segment_id_fkey';
+            columns: ['segment_id'];
+            isOneToOne: false;
+            referencedRelation: 'segments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
       join_class: { Args: { p_invite_code: string; p_mother_tongue: string }; Returns: string };
+      is_lesson_teacher: { Args: { p_lesson_id: string }; Returns: boolean };
+      can_read_lesson: { Args: { p_lesson_id: string }; Returns: boolean };
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database['public']['Enums']['user_role'];
       };
     };
-    Enums: { user_role: 'teacher' | 'student' | 'admin' };
+    Enums: {
+      user_role: 'teacher' | 'student' | 'admin';
+      lesson_format: 'room' | 'online' | 'hybrid';
+      audio_source: 'mic' | 'tab';
+      lesson_status: 'live' | 'processing' | 'review' | 'published';
+      subtitle_display: 'bilingual' | 'korean_only' | 'hidden';
+    };
     CompositeTypes: { [_ in never]: never };
   };
 };
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type ClassRow = Database['public']['Tables']['classes']['Row'];
+export type LessonRow = Database['public']['Tables']['lessons']['Row'];
+export type SegmentRow = Database['public']['Tables']['segments']['Row'];

@@ -91,8 +91,8 @@ Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua bi�
 | `profiles` | `id` (= auth.users), `display_name`, `role` (`teacher` \| `student` \| `admin`), `mother_tongue`, `ui_lang` |
 | `classes` | `id`, `teacher_id`, `name`, `level`, `schedule`, `textbook`, `invite_code` (unique), `settings` jsonb |
 | `class_members` | `class_id`, `student_id`, `mother_tongue`, `joined_at` |
-| `lessons` | `id`, `class_id`, `title`, `topic`, `format` (`room` \| `online` \| `hybrid`), `sources` text[], `target_langs` text[], `status` (`live` \| `processing` \| `review` \| `published`), `started_at`, `ended_at`, `audio_path` |
-| `segments` | `id`, `lesson_id`, `seq`, `speaker_label`, `speaker_profile_id`, `source` (`mic` \| `tab`), `lang`, `text`, `start_ms`, `end_ms`, `edited` bool |
+| `lessons` | `id`, `class_id`, `title`, `topic`, `textbook`, `format` (`room` \| `online` \| `hybrid`), `sources` (`mic` \| `tab`)[], `target_langs` text[] (tối đa 5), `display` (`bilingual` \| `korean_only` \| `hidden`), `status` (`live` \| `processing` \| `review` \| `published`), `started_at`, `ended_at`, `audio_path`. Mỗi lớp chỉ có một buổi `live` cùng lúc |
+| `segments` | `id`, `lesson_id`, `seq`, `speaker_label`, `speaker_profile_id`, `source` (`mic` \| `tab`), `lang`, `text`, `start_ms`, `end_ms`, `edited` bool. Chỉ lưu câu `final`; `(lesson_id, seq)` duy nhất |
 | `segment_translations` | `segment_id`, `lang`, `text` |
 | `questions` | `id`, `lesson_id`, `student_id`, `orig_lang`, `orig_text`, `ko_text`, `status` (`open` \| `answered`), `pinned` |
 | `vocab_items` | `id`, `lesson_id` / `class_id`, `ko`, `pos`, `topik_level`, `example_ko`, `segment_id` |
@@ -110,6 +110,7 @@ Migration đầu tiên: `supabase/migrations/20261017000000_profiles_classes.sql
 - Giáo viên đọc/ghi mọi dữ liệu của lớp mình (`classes.teacher_id = auth.uid()`).
 - Học sinh chỉ đọc dữ liệu lớp có trong `class_members`, chỉ đọc lesson `published` hoặc `live`.
 - Học sinh chỉ ghi `questions`, `attempts`, `saved_words` của chính mình.
+- `segments` và `segment_translations` do realtime gateway ghi bằng service role; giáo viên chỉ sửa (SPEC D4). Quyền đọc theo buổi học qua hàm `can_read_lesson()`.
 - Service role (realtime, worker) bỏ qua RLS, chỉ dùng ở server.
 - Học sinh vào lớp bằng hàm `join_class(mã, tiếng mẹ đẻ)` (vì chưa đọc được lớp trước khi vào); không insert trực tiếp vào `class_members`.
 - Policy tham chiếu chéo giữa các bảng đi qua hàm `SECURITY DEFINER` (`is_class_teacher`, `is_class_member`, `shares_class_with`, `current_user_role`) để tránh đệ quy RLS.

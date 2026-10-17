@@ -135,3 +135,102 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok - anon cannot call join_class';
 end $$;
 reset role;
+
+-- ===========================================================================
+-- Lessons, segments, translations (migration 20261017100000)
+-- ===========================================================================
+
+-- Teacher A starts a live lesson in her class.
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
+insert into public.lessons (id, class_id, title, format, sources, target_langs)
+values ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+        'Bài 7', 'hybrid', '{mic,tab}', '{vi,zh,en}');
+select pg_temp.check((select count(*) from public.lessons) = 1, 'teacher creates a lesson');
+
+do $$ begin
+  insert into public.lessons (class_id, title, format, sources)
+  values ('10000000-0000-0000-0000-000000000001', 'Bài 8', 'room', '{mic}');
+  raise exception 'RLS check failed: two live lessons in one class';
+exception when unique_violation then raise notice 'ok - one live lesson per class';
+end $$;
+
+do $$ begin
+  insert into public.lessons (class_id, title, format, sources, target_langs, status)
+  values ('10000000-0000-0000-0000-000000000001', 'Bài 9', 'room', '{mic}',
+          '{vi,zh,en,uz,ne,mn}', 'review');
+  raise exception 'RLS check failed: more than 5 target languages accepted';
+exception when check_violation then raise notice 'ok - at most 5 subtitle languages';
+end $$;
+
+-- A lesson still in review, which students must not see yet.
+insert into public.lessons (id, class_id, title, format, sources, status)
+values ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+        'Bài 6', 'room', '{mic}', 'review');
+
+insert into public.segments (id, lesson_id, seq, source, text, start_ms, end_ms) values
+  ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 0, 'mic',
+   '저는 한국 음식을 먹고 싶어요.', 34000, 36500),
+  ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', 0, 'mic',
+   '이 가방 좀 할인해 주세요.', 1000, 3000);
+insert into public.segment_translations (segment_id, lang, text) values
+  ('30000000-0000-0000-0000-000000000001', 'zh', '我想吃韩国料理。'),
+  ('30000000-0000-0000-0000-000000000002', 'zh', '这个包请给我打个折。');
+select pg_temp.check((select count(*) from public.segments) = 2, 'teacher reads all segments');
+
+update public.segments set text = '저는 한국 음식을 먹고 싶어요!', edited = true
+  where id = '30000000-0000-0000-0000-000000000001';
+select pg_temp.check(
+  (select edited from public.segments where id = '30000000-0000-0000-0000-000000000001'),
+  'teacher corrects a segment');
+reset role;
+
+-- Student 1 (member) sees the live lesson only, with its segments and translations.
+select pg_temp.act_as('00000000-0000-0000-0000-000000000001');
+select pg_temp.check(
+  (select array_agg(title) from public.lessons) = '{Bài 7}',
+  'member sees live lessons, not ones in review');
+select pg_temp.check((select count(*) from public.segments) = 1, 'member reads segments of live lessons');
+select pg_temp.check(
+  (select text from public.segment_translations) = '我想吃韩国料理。',
+  'member reads translations of live lessons');
+do $$ begin
+  insert into public.segments (lesson_id, seq, source, text, start_ms, end_ms)
+  values ('20000000-0000-0000-0000-000000000001', 1, 'mic', '가짜', 0, 1);
+  raise exception 'RLS check failed: student wrote a segment';
+exception when insufficient_privilege then raise notice 'ok - students cannot write segments';
+end $$;
+update public.lessons set status = 'published';
+reset role;
+select pg_temp.check(
+  (select count(*) from public.lessons where status = 'published') = 0,
+  'students cannot change lesson status');
+
+-- Publishing the reviewed lesson makes it visible to the member.
+update public.lessons set status = 'published' where id = '20000000-0000-0000-0000-000000000002';
+select pg_temp.act_as('00000000-0000-0000-0000-000000000001');
+select pg_temp.check((select count(*) from public.lessons) = 2, 'member sees a lesson once published');
+reset role;
+
+-- Student 2 (not a member), Teacher B and anon see nothing and cannot add lessons.
+select pg_temp.act_as('00000000-0000-0000-0000-000000000002');
+select pg_temp.check(
+  (select count(*) from public.lessons) + (select count(*) from public.segments)
+    + (select count(*) from public.segment_translations) = 0,
+  'non-member sees no lessons, segments or translations');
+reset role;
+
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.lessons) = 0, 'other teacher sees no lessons');
+do $$ begin
+  insert into public.lessons (class_id, title, format, sources)
+  values ('10000000-0000-0000-0000-000000000001', 'Xâm nhập', 'room', '{mic}');
+  raise exception 'RLS check failed: other teacher created a lesson';
+exception when insufficient_privilege then raise notice 'ok - other teacher cannot add lessons';
+end $$;
+reset role;
+
+select pg_temp.act_as(null);
+select pg_temp.check(
+  (select count(*) from public.lessons) + (select count(*) from public.segments) = 0,
+  'anon sees no lessons or segments');
+reset role;

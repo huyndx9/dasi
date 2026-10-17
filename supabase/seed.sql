@@ -26,3 +26,28 @@ insert into public.class_members (class_id, student_id, mother_tongue, consented
 select '10000000-0000-4000-8000-000000000001', id, mother_tongue, now()
 from public.profiles
 where role = 'student';
+
+-- A published lesson with a short bilingual transcript.
+insert into public.lessons (id, class_id, title, topic, textbook, format, sources, target_langs, status, started_at, ended_at)
+values ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001',
+        'Bài 7 – Mua sắm', '-고 싶다, -아/어서', '세종한국어 2', 'hybrid', '{mic,tab}', '{vi,zh,en}',
+        'published', now() - interval '2 days', now() - interval '2 days' + interval '42 minutes');
+
+insert into public.segments (id, lesson_id, seq, source, speaker_label, text, start_ms, end_ms) values
+  ('30000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001', 0, 'mic', 'Cô Kim',
+   '안녕하세요 여러분, 오늘은 -고 싶다를 배워 볼까요?', 12000, 15500),
+  ('30000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001', 1, 'mic', 'Cô Kim',
+   '저는 한국 음식을 먹고 싶어요.', 34000, 36500),
+  ('30000000-0000-4000-8000-000000000003', '20000000-0000-4000-8000-000000000001', 2, 'mic', 'Cô Kim',
+   '배가 아파서 병원에 갔어요.', 102000, 105000);
+
+insert into public.segment_translations (segment_id, lang, text) values
+  ('30000000-0000-4000-8000-000000000001', 'vi', 'Xin chào cả lớp, hôm nay mình học -고 싶다 nhé?'),
+  ('30000000-0000-4000-8000-000000000001', 'zh', '大家好，今天我们来学 -고 싶다 吧？'),
+  ('30000000-0000-4000-8000-000000000001', 'en', 'Hi everyone, shall we learn -고 싶다 today?'),
+  ('30000000-0000-4000-8000-000000000002', 'vi', 'Tôi muốn ăn món Hàn.'),
+  ('30000000-0000-4000-8000-000000000002', 'zh', '我想吃韩国料理。'),
+  ('30000000-0000-4000-8000-000000000002', 'en', 'I want to eat Korean food.'),
+  ('30000000-0000-4000-8000-000000000003', 'vi', 'Vì đau bụng nên tôi đã đi bệnh viện.'),
+  ('30000000-0000-4000-8000-000000000003', 'zh', '因为肚子疼，所以去了医院。'),
+  ('30000000-0000-4000-8000-000000000003', 'en', 'My stomach hurt, so I went to the hospital.');
