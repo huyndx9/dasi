@@ -38,3 +38,6 @@ Thumbs.db
 
 # claude code local settings
 .claude/settings.local.json
+
+# next
+next-env.d.ts

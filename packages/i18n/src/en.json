@@ -1,0 +1,11 @@
+{
+  "app.name": "Dasi",
+  "app.tagline": "Mother-tongue subtitles for multilingual Korean classes",
+  "home.intro": "The teacher speaks Korean; every student reads subtitles in their own language. After class, AI drafts the transcript, vocabulary and exercises for the teacher to review.",
+  "home.teacherCta": "I'm a teacher",
+  "home.studentCta": "I'm a student",
+  "home.comingSoon": "Sign-in arrives with the MVP.",
+  "home.languagesTitle": "Subtitle languages",
+  "language.beta": "Beta",
+  "realtime.status.ok": "Running"
+}

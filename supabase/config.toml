@@ -1,0 +1,2 @@
+# Supabase CLI fills every other setting with its defaults (seed: ./seed.sql).
+project_id = "dasi"

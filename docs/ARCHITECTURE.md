@@ -82,7 +82,7 @@ export interface LlmProvider {
 }
 ```
 
-Adapter đặt trong `packages/providers/src/adapters/` (`soniox.ts`, `anthropic.ts`, …). Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`.
+Adapter đặt trong `packages/providers/src/adapters/` (`soniox.ts`, `anthropic.ts`, …). Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. Hiện mới có adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
 
 ## Mô hình dữ liệu (rút gọn)
 
@@ -105,14 +105,18 @@ Adapter đặt trong `packages/providers/src/adapters/` (`soniox.ts`, `anthropic
 
 ### RLS (nguyên tắc)
 
+Migration đầu tiên: `supabase/migrations/20261017000000_profiles_classes.sql`. Kiểm tra bằng `pnpm test:db` (chạy trong CI).
+
 - Giáo viên đọc/ghi mọi dữ liệu của lớp mình (`classes.teacher_id = auth.uid()`).
 - Học sinh chỉ đọc dữ liệu lớp có trong `class_members`, chỉ đọc lesson `published` hoặc `live`.
 - Học sinh chỉ ghi `questions`, `attempts`, `saved_words` của chính mình.
 - Service role (realtime, worker) bỏ qua RLS, chỉ dùng ở server.
+- Học sinh vào lớp bằng hàm `join_class(mã, tiếng mẹ đẻ)` (vì chưa đọc được lớp trước khi vào); không insert trực tiếp vào `class_members`.
+- Policy tham chiếu chéo giữa các bảng đi qua hàm `SECURITY DEFINER` (`is_class_teacher`, `is_class_member`, `shares_class_with`, `current_user_role`) để tránh đệ quy RLS.
 
 ## Biến môi trường
 
-Xem `.env.example`. Không commit `.env.local`.
+Xem `.env.example`. Không commit `.env.local`. Mọi app đọc chung `.env.local` ở thư mục gốc; realtime và worker kiểm tra biến môi trường bằng zod khi khởi động (`apps/*/src/env.ts`).
 
 ## Quyết định còn mở
 

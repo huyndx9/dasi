@@ -4,7 +4,7 @@ Dasi là web app AI hỗ trợ **dạy và học tiếng Hàn trong lớp đa ng
 
 > Tên "Dasi" (다시) nghĩa là "lại lần nữa": nghe lại, ôn lại, hiểu từng câu.
 
-**Trạng thái:** đang chuẩn bị MVP · Prototype UI: [`design/prototype-v2.html`](design/prototype-v2.html) (mở trực tiếp bằng trình duyệt)
+**Trạng thái:** Giai đoạn 0 (nền tảng) · bắt đầu MVP · Prototype UI: [`design/prototype-v2.html`](design/prototype-v2.html) (mở trực tiếp bằng trình duyệt)
 
 ---
 
@@ -46,7 +46,7 @@ Lý do chọn và quy trình thêm ngôn ngữ: [`docs/LANGUAGES.md`](docs/LANGU
 
 Kiến trúc chi tiết: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
-## Cấu trúc thư mục (dự kiến)
+## Cấu trúc thư mục
 
 ```
 dasi/
@@ -60,7 +60,9 @@ dasi/
 │  └─ i18n/         # Chuỗi giao diện theo ngôn ngữ
 ├─ supabase/
 │  ├─ migrations/   # SQL migration + RLS policy
-│  └─ seed.sql      # Dữ liệu mẫu (lớp, học sinh, buổi học)
+│  ├─ tests/        # Kiểm tra RLS chạy trên Postgres thường
+│  └─ seed.sql      # Dữ liệu mẫu (lớp, học sinh)
+├─ scripts/         # test-db.sh
 ├─ design/          # Prototype UI và tài liệu thiết kế
 ├─ docs/            # Đặc tả, kiến trúc, roadmap
 ├─ .claude/         # Lệnh tuỳ chỉnh cho Claude Code
@@ -71,10 +73,10 @@ dasi/
 
 ### Yêu cầu
 
-- Node.js 20 LTS trở lên, pnpm 9
-- Tài khoản Supabase (hoặc Supabase CLI để chạy local)
+- Node.js 20 LTS trở lên (khuyên dùng 22, xem `.nvmrc`), pnpm 10
+- Tài khoản Supabase, hoặc [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) + Docker để chạy local
 - Redis (local qua Docker, hoặc Upstash)
-- API key: Soniox, Anthropic (hoặc Google AI)
+- API key: Soniox, Anthropic (hoặc Google AI). Chưa có khoá vẫn chạy được: mặc định `STT_PROVIDER=mock`, `LLM_PROVIDER=mock`
 
 ### Cài đặt
 
@@ -88,7 +90,9 @@ pnpm db:migrate && pnpm db:seed
 pnpm dev                         # chạy web + realtime + worker
 ```
 
-Mở http://localhost:3000. Tài khoản mẫu trong `supabase/seed.sql`.
+Worker cần Redis (`REDIS_URL`). Realtime gateway có `GET /health` ở cổng `REALTIME_PORT` (mặc định 8787).
+
+Mở http://localhost:3000. Dữ liệu mẫu trong `supabase/seed.sql` (lớp mẫu có mã mời `HANGUL`).
 
 ### Lệnh thường dùng
 
@@ -98,8 +102,10 @@ Mở http://localhost:3000. Tài khoản mẫu trong `supabase/seed.sql`.
 | `pnpm build` | Build tất cả app |
 | `pnpm lint` / `pnpm typecheck` | Kiểm tra code |
 | `pnpm test` | Unit test (Vitest) |
-| `pnpm test:e2e` | E2E test (Playwright) |
-| `pnpm db:migrate` / `pnpm db:seed` | Chạy migration / nạp dữ liệu mẫu |
+| `pnpm test:e2e` | E2E test (Playwright, máy tính + 390px) |
+| `DATABASE_URL=… pnpm test:db` | Chạy migration + seed + kiểm tra RLS trên một database Postgres trống |
+| `pnpm format` | Định dạng code bằng Prettier |
+| `pnpm db:migrate` / `pnpm db:seed` | Chạy migration / reset database local và nạp dữ liệu mẫu (cần Supabase CLI) |
 
 ## Làm việc với Claude Code
 

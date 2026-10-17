@@ -4,11 +4,12 @@ Mỗi mục là một issue GitHub. Đánh dấu khi đã merge. Mã trong ngo�
 
 ## Giai đoạn 0 · Nền tảng (tuần 1)
 
-- [ ] Khởi tạo monorepo pnpm + Turborepo: `apps/web`, `apps/realtime`, `apps/worker`, `packages/{providers,shared,i18n}`
-- [ ] ESLint, Prettier, TypeScript strict, Vitest, Playwright
-- [ ] GitHub Actions: lint + typecheck + test cho mỗi PR
-- [ ] Supabase project + migration đầu tiên (`profiles`, `classes`, `class_members`) + RLS
-- [ ] Design tokens và layout từ `design/prototype-v2.html` vào Tailwind config
+- [x] Khởi tạo monorepo pnpm + Turborepo: `apps/web`, `apps/realtime`, `apps/worker`, `packages/{providers,shared,i18n}`
+- [x] ESLint, Prettier, TypeScript strict, Vitest, Playwright
+- [x] GitHub Actions: lint + typecheck + test cho mỗi PR (kèm build, e2e, kiểm tra migration + RLS)
+- [x] Migration đầu tiên (`profiles`, `classes`, `class_members`) + RLS
+- [ ] Tạo Supabase project (Cloud, region Seoul/Tokyo) và chạy migration
+- [x] Design tokens và layout từ `design/prototype-v2.html` vào Tailwind config
 - [ ] Spike STT: so sánh Soniox / Return Zero / CLOVA / Deepgram trên 3 đoạn ghi âm lớp thật (độ trễ, lỗi nhận dạng) → ghi kết quả vào `docs/decisions/001-stt-provider.md`
 
 ## Giai đoạn 1 · MVP (tuần 2–6)

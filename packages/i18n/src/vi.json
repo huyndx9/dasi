@@ -1,0 +1,11 @@
+{
+  "app.name": "Dasi",
+  "app.tagline": "Phụ đề tiếng mẹ đẻ cho lớp tiếng Hàn đa ngôn ngữ",
+  "home.intro": "Giáo viên giảng bằng tiếng Hàn, mỗi học sinh đọc phụ đề bằng ngôn ngữ của mình. Sau buổi học, AI soạn bản ghi, từ vựng và bài tập để giáo viên duyệt.",
+  "home.teacherCta": "Tôi là giáo viên",
+  "home.studentCta": "Tôi là học sinh",
+  "home.comingSoon": "Đăng nhập sẽ có trong bản MVP.",
+  "home.languagesTitle": "Ngôn ngữ phụ đề",
+  "language.beta": "Beta",
+  "realtime.status.ok": "Đang hoạt động"
+}

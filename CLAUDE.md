@@ -17,11 +17,11 @@ Core idea that shapes the architecture: **recognise Korean speech once, translat
 
 ## Stack
 
-- pnpm workspaces + Turborepo, TypeScript strict everywhere
+- pnpm workspaces + Turborepo, TypeScript 6 strict everywhere; one root ESLint flat config; workspace packages ship TS source (Next transpiles them, tsup bundles them for realtime/worker)
 - `apps/web`: Next.js App Router, Tailwind, shadcn/ui, Supabase client
 - `apps/realtime`: Node + Fastify + `ws`; long-lived WebSocket per audio source; streams to the STT provider and fans out subtitles to the room
 - `apps/worker`: BullMQ jobs (post-class processing)
-- `packages/providers`: `SttProvider`, `LlmProvider`, `TtsProvider` interfaces + adapters (Soniox, Anthropic, …)
+- `packages/providers`: `SttProvider`, `LlmProvider`, `TtsProvider` interfaces + adapters (only `mock` so far; Soniox, Anthropic, … to come)
 - `packages/shared`: domain types, zod schemas, language registry
 - `packages/i18n`: UI strings (source language: Vietnamese `vi`)
 - `supabase/`: SQL migrations, RLS policies, seed data
@@ -35,6 +35,8 @@ pnpm --filter web dev  # one app
 pnpm lint && pnpm typecheck
 pnpm test              # Vitest
 pnpm test:e2e          # Playwright
+DATABASE_URL=... pnpm test:db  # migrations + seed + RLS checks on an empty Postgres
+pnpm format            # Prettier (Markdown is not reformatted)
 pnpm db:migrate        # apply supabase/migrations
 pnpm db:seed
 ```
@@ -48,7 +50,7 @@ pnpm db:seed
 5. **Language codes** are ISO 639-1 (`vi`, `zh`, `en`, `uz`, `ru`, `ne`, `mn`, `th`, …) and must exist in `packages/shared/src/languages.ts`. A language in `beta` status must show the Beta tag in the UI.
 6. **Realtime results have two states:** `partial` (may change, render grey italic) and `final` (persist to DB, then translate). Only persist and translate `final` segments.
 7. **Recording requires consent.** Do not start capture without the consent step in the new-session flow. See `docs/PRIVACY.md`.
-8. **Database changes** only via a new file in `supabase/migrations/` with matching RLS policies. Never edit an applied migration.
+8. **Database changes** only via a new file in `supabase/migrations/` with matching RLS policies and checks in `supabase/tests/rls.sql`. Never edit an applied migration. Cross-table policy conditions go through `SECURITY DEFINER` helpers to avoid RLS recursion.
 9. Keep components small; colocate tests (`*.test.ts`). Prefer server components; mark client components explicitly.
 10. Do not commit `.env*` files (except `.env.example`), recordings, or real student data.
 

@@ -1,0 +1,150 @@
+@import 'tailwindcss';
+
+/* Design tokens from design/prototype-v2.html (docs/UI-UX.md). */
+:root {
+  color-scheme: light;
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --sunk: #eaeff7;
+  --line: #dce3ee;
+  --fg: #16223b;
+  --muted: #5b6884;
+  --faint: #8a95ad;
+  --primary: #1b2a4a;
+  --on-primary: #ffffff;
+  --live: #e8573a;
+  --live-soft: #fde9e3;
+  --learn: #0f9471;
+  --learn-soft: #ddf3ec;
+  --warn: #b86e00;
+  --warn-soft: #fff1d6;
+  --hl: #ffe8a3;
+  --shadow: 0 1px 2px rgba(22, 34, 59, 0.06), 0 6px 20px rgba(22, 34, 59, 0.06);
+
+  --l-vi: #d9443a;
+  --l-zh: #c98a0b;
+  --l-en: #2f6fd6;
+  --l-uz: #169c8c;
+  --l-ne: #8a4fd0;
+  --l-mn: #c2417f;
+  --l-th: #3b8f3e;
+  --l-ru: #5a6c8f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0d1320;
+    --surface: #151d2e;
+    --sunk: #1c2639;
+    --line: #2a3550;
+    --fg: #e7ecf5;
+    --muted: #a1acc3;
+    --faint: #717d98;
+    --primary: #e7ecf5;
+    --on-primary: #0d1320;
+    --live: #ff7759;
+    --live-soft: #3a1f1b;
+    --learn: #3cc79e;
+    --learn-soft: #12352c;
+    --warn: #f0b44c;
+    --warn-soft: #3a2d12;
+    --hl: #5b4a12;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+
+    --l-vi: #ff7a70;
+    --l-zh: #f1b841;
+    --l-en: #6fa3ff;
+    --l-uz: #45cdbb;
+    --l-ne: #b98af5;
+    --l-mn: #f07ab5;
+    --l-th: #71c46f;
+    --l-ru: #9aabcc;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0d1320;
+  --surface: #151d2e;
+  --sunk: #1c2639;
+  --line: #2a3550;
+  --fg: #e7ecf5;
+  --muted: #a1acc3;
+  --faint: #717d98;
+  --primary: #e7ecf5;
+  --on-primary: #0d1320;
+  --live: #ff7759;
+  --live-soft: #3a1f1b;
+  --learn: #3cc79e;
+  --learn-soft: #12352c;
+  --warn: #f0b44c;
+  --warn-soft: #3a2d12;
+  --hl: #5b4a12;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  --l-vi: #ff7a70;
+  --l-zh: #f1b841;
+  --l-en: #6fa3ff;
+  --l-uz: #45cdbb;
+  --l-ne: #b98af5;
+  --l-mn: #f07ab5;
+  --l-th: #71c46f;
+  --l-ru: #9aabcc;
+}
+
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+  &:where([data-theme='dark'] *) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-live: var(--live);
+  --color-live-soft: var(--live-soft);
+  --color-learn: var(--learn);
+  --color-learn-soft: var(--learn-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-hl: var(--hl);
+
+  --color-lang-vi: var(--l-vi);
+  --color-lang-zh: var(--l-zh);
+  --color-lang-en: var(--l-en);
+  --color-lang-uz: var(--l-uz);
+  --color-lang-ne: var(--l-ne);
+  --color-lang-mn: var(--l-mn);
+  --color-lang-th: var(--l-th);
+  --color-lang-ru: var(--l-ru);
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --shadow-card: var(--shadow);
+
+  --font-ui:
+    var(--font-be-vietnam), var(--font-noto-kr), var(--font-noto-devanagari), var(--font-noto-thai),
+    system-ui, sans-serif;
+  --font-ko: var(--font-noto-kr), var(--font-be-vietnam), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 14px/1.5 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
