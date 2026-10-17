@@ -37,16 +37,21 @@ export class SupabaseLessonStore implements LessonStore {
     if (!data) return null;
 
     let role: LessonAccess['role'] | null = null;
+    let motherTongue: string | null = null;
     if (data.classes?.teacher_id === userId) {
       role = 'teacher';
     } else {
-      const { count, error: memberError } = await this.db
+      const { data: member, error: memberError } = await this.db
         .from('class_members')
-        .select('student_id', { count: 'exact', head: true })
+        .select('mother_tongue')
         .eq('class_id', data.class_id)
-        .eq('student_id', userId);
+        .eq('student_id', userId)
+        .maybeSingle<{ mother_tongue: string }>();
       if (memberError) throw new Error(`Không đọc được danh sách lớp: ${memberError.message}`);
-      if (count) role = 'student';
+      if (member) {
+        role = 'student';
+        motherTongue = member.mother_tongue;
+      }
     }
     if (!role) return null;
 
@@ -57,6 +62,7 @@ export class SupabaseLessonStore implements LessonStore {
       sources: data.sources,
       targetLangs: data.target_langs,
       startedAt: new Date(data.started_at),
+      motherTongue,
     };
   }
 
@@ -72,17 +78,33 @@ export class SupabaseLessonStore implements LessonStore {
     return data ? data.seq + 1 : 0;
   }
 
-  async saveFinal(lessonId: string, s: LiveSegment): Promise<void> {
-    const { error } = await this.db.from('segments').insert({
-      lesson_id: lessonId,
-      seq: s.seq,
-      source: s.source,
-      speaker_label: s.speaker ?? null,
-      text: s.text,
-      start_ms: s.startMs,
-      end_ms: s.endMs,
-    });
+  async saveFinal(lessonId: string, s: LiveSegment): Promise<string> {
+    const { data, error } = await this.db
+      .from('segments')
+      .insert({
+        lesson_id: lessonId,
+        seq: s.seq,
+        source: s.source,
+        speaker_label: s.speaker ?? null,
+        text: s.text,
+        start_ms: s.startMs,
+        end_ms: s.endMs,
+      })
+      .select('id')
+      .single<{ id: string }>();
     if (error) throw new Error(`Không lưu được câu ${s.seq}: ${error.message}`);
+    return data.id;
+  }
+
+  async saveTranslations(segmentId: string, translations: Record<string, string>): Promise<void> {
+    const rows = Object.entries(translations).map(([lang, text]) => ({
+      segment_id: segmentId,
+      lang,
+      text,
+    }));
+    if (rows.length === 0) return;
+    const { error } = await this.db.from('segment_translations').upsert(rows);
+    if (error) throw new Error(`Không lưu được bản dịch: ${error.message}`);
   }
 
   async markProcessing(lessonId: string, endedAt: Date): Promise<void> {

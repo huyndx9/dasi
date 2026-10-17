@@ -1,4 +1,4 @@
-import { MockSttProvider } from '@dasi/providers';
+import { MockLlmProvider, MockSttProvider, type TranslateInput } from '@dasi/providers';
 import { REALTIME_CLOSE, type LiveSegment, type ServerMessage } from '@dasi/shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { WebSocket } from 'ws';
@@ -11,29 +11,54 @@ const OTHER_LESSON = '20000000-0000-4000-8000-000000000002';
 const TEACHER = 'teacher-token';
 const STUDENT = 'student-token';
 const OUTSIDER = 'outsider-token';
+const STUDENT_UZ = 'student-uz-token';
+
+/** MockLlmProvider ("[vi] 안녕") that can also fail or stall, and counts calls. */
+class TestLlm extends MockLlmProvider {
+  mode: 'ok' | 'fail' | 'stall' = 'ok';
+  calls: TranslateInput[] = [];
+  override async translate(input: TranslateInput) {
+    this.calls.push(input);
+    if (this.mode === 'fail') throw new Error('LLM down');
+    if (this.mode === 'stall') return new Promise<Record<string, string>>(() => undefined);
+    return super.translate(input);
+  }
+}
 
 /** In-memory LessonStore; `log` records the order of side effects. */
 class FakeStore implements LessonStore {
   saved: LiveSegment[] = [];
   log: string[] = [];
+  translations = new Map<string, Record<string, string>>();
   status: LessonAccess['status'] = 'live';
+  targetLangs = ['vi', 'zh'];
   firstSeq = 0;
 
   async authenticate(token: string) {
-    return (
-      { [TEACHER]: 'u-teacher', [STUDENT]: 'u-student', [OUTSIDER]: 'u-outsider' }[token] ?? null
-    );
+    const users: Record<string, string> = {
+      [TEACHER]: 'u-teacher',
+      [STUDENT]: 'u-student',
+      [STUDENT_UZ]: 'u-student-uz',
+      [OUTSIDER]: 'u-outsider',
+    };
+    return users[token] ?? null;
   }
   async loadAccess(lessonId: string, userId: string): Promise<LessonAccess | null> {
     if (lessonId !== LESSON) return null;
-    const role = { 'u-teacher': 'teacher', 'u-student': 'student' }[userId] as LessonAccess['role'];
-    if (!role) return null;
+    const members: Record<string, [LessonAccess['role'], string | null]> = {
+      'u-teacher': ['teacher', null],
+      'u-student': ['student', 'zh'],
+      'u-student-uz': ['student', 'uz'],
+    };
+    const member = members[userId];
+    if (!member) return null;
     return {
       lessonId,
-      role,
+      role: member[0],
+      motherTongue: member[1],
       status: this.status,
       sources: ['mic', 'tab'],
-      targetLangs: ['vi', 'zh'],
+      targetLangs: this.targetLangs,
       startedAt: new Date(Date.now() - 60_000),
     };
   }
@@ -42,6 +67,11 @@ class FakeStore implements LessonStore {
   }
   async saveFinal(_lessonId: string, segment: LiveSegment) {
     this.saved.push(segment);
+    return `seg-${segment.seq}`;
+  }
+  async saveTranslations(segmentId: string, translations: Record<string, string>) {
+    this.log.push(`saveTranslations:${segmentId}`);
+    this.translations.set(segmentId, translations);
   }
   async markProcessing() {
     this.log.push('markProcessing');
@@ -68,16 +98,20 @@ interface Client {
 
 let store: FakeStore;
 let queue: FakeQueue;
+let llm: TestLlm;
 let app: ReturnType<typeof buildApp>;
 
 beforeEach(async () => {
   store = new FakeStore();
   queue = new FakeQueue(store);
+  llm = new TestLlm();
   app = buildApp(loadEnv({ LOG_LEVEL: 'silent' }), {
     store,
     queue,
     stt: new MockSttProvider(),
+    llm,
     helloTimeoutMs: 200,
+    translateTimeoutMs: 150,
   });
   await app.ready();
 });
@@ -253,7 +287,7 @@ describe('ending the lesson', () => {
     expect(await teacher.closed).toBe(REALTIME_CLOSE.ended);
 
     expect(store.saved).toHaveLength(1);
-    expect(store.log).toEqual(['markProcessing', 'enqueue:processing']);
+    expect(store.log).toEqual(['saveTranslations:seg-0', 'markProcessing', 'enqueue:processing']);
     expect(queue.jobs).toEqual([LESSON]);
     expect(student.messages.at(-1)).toEqual({ type: 'status', status: 'processing' });
 
@@ -275,5 +309,79 @@ describe('without Supabase settings', () => {
     ws.send(JSON.stringify({ type: 'hello', token: TEACHER, role: 'teacher' }));
     expect(await closed).toBe(REALTIME_CLOSE.notConfigured);
     await bare.close();
+  });
+});
+
+describe('translation (issue #8)', () => {
+  const translationsOf = (c: Client) =>
+    c.messages.flatMap((m) => (m.type === 'translation' ? [m] : []));
+
+  it('translates each final once into every target language and stores it', async () => {
+    const teacher = await join(TEACHER, 'teacher', 'mic');
+    await join(STUDENT, 'student');
+    await join(STUDENT_UZ, 'student');
+    speak(teacher, 2);
+    await teacher.next('translation', 2);
+
+    // One call per sentence, whatever the number of students.
+    expect(llm.calls.map((c) => [c.from, c.to])).toEqual([
+      ['ko', ['vi', 'zh']],
+      ['ko', ['vi', 'zh']],
+    ]);
+    expect(store.translations.get('seg-0')).toEqual({
+      vi: '[vi] 안녕하세요, 여러분.',
+      zh: '[zh] 안녕하세요, 여러분.',
+    });
+    expect(translationsOf(teacher).map((t) => [t.seq, Object.keys(t.translations)])).toEqual([
+      [0, ['vi', 'zh']],
+      [1, ['vi', 'zh']],
+    ]);
+  });
+
+  it('sends each student only their own language, or English, or nothing', async () => {
+    store.targetLangs = ['zh', 'en'];
+    const teacher = await join(TEACHER, 'teacher', 'mic');
+    const zh = await join(STUDENT, 'student');
+    const uz = await join(STUDENT_UZ, 'student');
+    expect(zh.messages[0]).toMatchObject({ type: 'ready', language: 'zh' });
+    expect(uz.messages[0]).toMatchObject({ type: 'ready', language: 'en' }); // SPEC §7 fallback
+    speak(teacher);
+    await zh.next('translation');
+    await uz.next('translation');
+    expect(translationsOf(zh)[0]!.translations).toEqual({ zh: '[zh] 안녕하세요, 여러분.' });
+    expect(translationsOf(uz)[0]!.translations).toEqual({ en: '[en] 안녕하세요, 여러분.' });
+
+    // A late joiner gets recent finals with only their language.
+    const late = await join(STUDENT, 'student');
+    const ready = late.messages[0];
+    expect(ready?.type === 'ready' && ready.recent[0]!.translations).toEqual({
+      zh: '[zh] 안녕하세요, 여러분.',
+    });
+  });
+
+  it('gives Korean only when the lesson has neither the mother tongue nor English', async () => {
+    const teacher = await join(TEACHER, 'teacher', 'mic');
+    const uz = await join(STUDENT_UZ, 'student'); // lesson: vi, zh
+    expect(uz.messages[0]).toMatchObject({ language: null });
+    speak(teacher);
+    await teacher.next('translation');
+    expect(translationsOf(uz)).toEqual([]);
+    expect(segments(uz).some((s) => s.state === 'final')).toBe(true);
+  });
+
+  it('keeps the Korean line when translation fails or is too slow', async () => {
+    for (const mode of ['fail', 'stall'] as const) {
+      llm.mode = mode;
+      const teacher = await join(TEACHER, 'teacher', 'mic');
+      const student = await join(STUDENT, 'student');
+      speak(teacher);
+      await student.next('segment', 2);
+      await new Promise((r) => setTimeout(r, 250)); // past translateTimeoutMs
+      expect(translationsOf(student), mode).toEqual([]);
+      expect(segments(student).filter((s) => s.state === 'final')).toHaveLength(1);
+      teacher.ws.send(JSON.stringify({ type: 'end' }));
+      expect(await student.closed, mode).toBe(REALTIME_CLOSE.ended); // ending does not hang
+      store.status = 'live';
+    }
   });
 });

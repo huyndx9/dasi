@@ -91,7 +91,7 @@ export function registerGateway(app: FastifyInstance, opts: GatewayOptions): voi
         const room = await opts.rooms.get(lessonId.data, access.startedAt, access.targetLangs);
         if (room.isEnding) return fail('not_live', REALTIME_CLOSE.notLive);
         if (socket.readyState !== socket.OPEN) return;
-        room.join(peer, role);
+        room.join(peer, role, access.motherTongue);
         if (source) {
           try {
             await room.attachSource(peer, source);

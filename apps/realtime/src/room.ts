@@ -1,8 +1,11 @@
-import type { SttProvider, SttResult, SttStream } from '@dasi/providers';
+import type { LlmProvider, SttProvider, SttResult, SttStream } from '@dasi/providers';
 import {
+  isLanguageCode,
   RECENT_SEGMENTS,
   REALTIME_CLOSE,
+  subtitleLanguageFor,
   type AudioSource,
+  type LanguageCode,
   type LiveSegment,
   type RoomStatus,
   type ServerMessage,
@@ -25,8 +28,13 @@ export interface RoomDeps {
   store: LessonStore;
   queue: FinalizeQueue | null;
   stt: SttProvider;
+  llm: LlmProvider;
   log: Logger;
+  /** A translation slower than this is dropped; students keep the Korean line. */
+  translateTimeoutMs: number;
 }
+
+type Translations = Partial<Record<LanguageCode, string>>;
 
 interface SourceStream {
   peer: Peer;
@@ -36,12 +44,16 @@ interface SourceStream {
 /**
  * A live lesson: teacher audio in (one STT stream per source), segments out to everyone.
  * Partials are broadcast as they come; finals are numbered, saved, then broadcast, one at
- * a time so seq order matches the order students see (CLAUDE.md rule 6).
+ * a time so seq order matches the order students see (CLAUDE.md rule 6). Each saved final
+ * is then translated once into every target language (issue #8): cost follows the number
+ * of languages, not of students, and each student receives only their own language.
  */
 export class Room {
   private readonly sources = new Map<AudioSource, SourceStream>();
   private readonly teachers = new Set<Peer>();
-  private readonly students = new Set<Peer>();
+  /** Students and the one subtitle language each receives (null: Korean only). */
+  private readonly students = new Map<Peer, string | null>();
+  private readonly translating = new Set<Promise<void>>();
   private readonly recent: LiveSegment[] = [];
   private status: RoomStatus = 'live';
   private finals: Promise<void> = Promise.resolve();
@@ -66,15 +78,21 @@ export class Room {
     return this.ending !== null;
   }
 
-  join(peer: Peer, role: 'teacher' | 'student'): void {
-    (role === 'teacher' ? this.teachers : this.students).add(peer);
+  join(peer: Peer, role: 'teacher' | 'student', motherTongue: string | null = null): void {
+    const language =
+      role === 'student' ? subtitleLanguageFor(motherTongue, this.targetLangs) : null;
+    if (role === 'teacher') this.teachers.add(peer);
+    else this.students.set(peer, language);
     peer.send({
       type: 'ready',
       lessonId: this.lessonId,
       role,
       status: this.status,
       targetLangs: this.targetLangs,
-      recent: [...this.recent],
+      language,
+      recent: this.recent.map((s) =>
+        role === 'teacher' ? s : { ...s, translations: pick(s.translations, language) },
+      ),
     });
     if (role === 'teacher') peer.send({ type: 'presence', students: this.students.size });
     else this.sendPresence();
@@ -153,6 +171,8 @@ export class Room {
     this.sources.clear();
     await Promise.all(streams.map((s) => s.end()));
     await this.finals;
+    // Post-class processing reads segment_translations too.
+    await Promise.allSettled([...this.translating]);
     await this.deps.store.markProcessing(this.lessonId, new Date());
     if (this.deps.queue) {
       await this.deps.queue.enqueue(this.lessonId);
@@ -164,7 +184,8 @@ export class Room {
     }
     this.status = 'processing';
     this.broadcast({ type: 'status', status: 'processing' });
-    for (const peer of [...this.teachers, ...this.students]) peer.close(REALTIME_CLOSE.ended);
+    for (const peer of [...this.teachers, ...this.students.keys()])
+      peer.close(REALTIME_CLOSE.ended);
     this.teachers.clear();
     this.students.clear();
     this.onEmpty(this);
@@ -174,8 +195,9 @@ export class Room {
     this.pendingFinals++;
     this.finals = this.finals.then(async () => {
       const segment = this.toSegment(r, source, offsetMs, 'final', this.seq);
+      let segmentId: string;
       try {
-        await this.deps.store.saveFinal(this.lessonId, segment);
+        segmentId = await this.deps.store.saveFinal(this.lessonId, segment);
       } catch (error) {
         this.pendingFinals--;
         this.deps.log.error(
@@ -190,7 +212,52 @@ export class Room {
       this.recent.push(segment);
       if (this.recent.length > RECENT_SEGMENTS) this.recent.shift();
       this.broadcast({ type: 'segment', segment });
+      this.track(this.translate(segment, segmentId));
     });
+  }
+
+  private track(task: Promise<void>): void {
+    this.translating.add(task);
+    void task.finally(() => this.translating.delete(task));
+  }
+
+  /** Translates a saved final into every target language, stores it, then sends it out. */
+  private async translate(segment: LiveSegment, segmentId: string): Promise<void> {
+    if (this.targetLangs.length === 0) return;
+    let translations: Translations;
+    try {
+      const result = await withTimeout(
+        this.deps.llm.translate({ text: segment.text, from: 'ko', to: this.targetLangs }),
+        this.deps.translateTimeoutMs,
+      );
+      translations = Object.fromEntries(
+        Object.entries(result).filter(([lang, text]) => isLanguageCode(lang) && text.trim() !== ''),
+      ) as Translations;
+    } catch (error) {
+      this.deps.log.warn(
+        { err: error, lessonId: this.lessonId, seq: segment.seq },
+        'Translation failed; students keep the Korean line',
+      );
+      return;
+    }
+
+    try {
+      await this.deps.store.saveTranslations(segmentId, translations);
+    } catch (error) {
+      // Students still get the translation live; the review page will show it missing.
+      this.deps.log.error(
+        { err: error, lessonId: this.lessonId, seq: segment.seq },
+        'Saving translations failed',
+      );
+    }
+
+    segment.translations = translations;
+    for (const t of this.teachers) t.send({ type: 'translation', seq: segment.seq, translations });
+    for (const [peer, language] of this.students) {
+      const own = pick(translations, language);
+      if (Object.keys(own).length > 0)
+        peer.send({ type: 'translation', seq: segment.seq, translations: own });
+    }
   }
 
   private toSegment(
@@ -218,8 +285,30 @@ export class Room {
 
   private broadcast(message: ServerMessage): void {
     for (const peer of this.teachers) peer.send(message);
-    for (const peer of this.students) peer.send(message);
+    for (const peer of this.students.keys()) peer.send(message);
   }
+}
+
+function pick(translations: Translations, language: string | null): Translations {
+  if (!language || !isLanguageCode(language)) return {};
+  const text = translations[language];
+  return text === undefined ? {} : { [language]: text };
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Timed out after ${ms} ms`)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      },
+    );
+  });
 }
 
 /** Live rooms by lesson id. Creating one reads the next seq, so concurrent joins share a promise. */
