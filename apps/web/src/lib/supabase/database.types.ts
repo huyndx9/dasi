@@ -121,6 +121,7 @@ export type Database = {
           started_at: string;
           ended_at: string | null;
           audio_path: string | null;
+          processing_error: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -138,6 +139,7 @@ export type Database = {
           started_at?: string;
           ended_at?: string | null;
           audio_path?: string | null;
+          processing_error?: string | null;
         };
         Update: {
           title?: string;
@@ -147,6 +149,7 @@ export type Database = {
           status?: Database['public']['Enums']['lesson_status'];
           ended_at?: string | null;
           audio_path?: string | null;
+          processing_error?: string | null;
         };
         Relationships: [
           {
@@ -223,6 +226,84 @@ export type Database = {
           },
         ];
       };
+      lesson_summaries: {
+        Row: { lesson_id: string; lang: string; text: string; edited: boolean };
+        Insert: { lesson_id: string; lang: string; text: string; edited?: boolean };
+        Update: { text?: string; edited?: boolean };
+        Relationships: [
+          {
+            foreignKeyName: 'lesson_summaries_lesson_id_fkey';
+            columns: ['lesson_id'];
+            isOneToOne: false;
+            referencedRelation: 'lessons';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vocab_items: {
+        Row: {
+          id: string;
+          lesson_id: string;
+          position: number;
+          ko: string;
+          pos: Database['public']['Enums']['part_of_speech'];
+          topik_level: number | null;
+          example_ko: string | null;
+          segment_id: string | null;
+          edited: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          lesson_id: string;
+          position: number;
+          ko: string;
+          pos?: Database['public']['Enums']['part_of_speech'];
+          topik_level?: number | null;
+          example_ko?: string | null;
+          segment_id?: string | null;
+          edited?: boolean;
+        };
+        Update: {
+          position?: number;
+          ko?: string;
+          pos?: Database['public']['Enums']['part_of_speech'];
+          topik_level?: number | null;
+          example_ko?: string | null;
+          segment_id?: string | null;
+          edited?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vocab_items_lesson_id_fkey';
+            columns: ['lesson_id'];
+            isOneToOne: false;
+            referencedRelation: 'lessons';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'vocab_items_segment_id_fkey';
+            columns: ['segment_id'];
+            isOneToOne: false;
+            referencedRelation: 'segments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vocab_translations: {
+        Row: { vocab_id: string; lang: string; meaning: string };
+        Insert: { vocab_id: string; lang: string; meaning: string };
+        Update: { meaning?: string };
+        Relationships: [
+          {
+            foreignKeyName: 'vocab_translations_vocab_id_fkey';
+            columns: ['vocab_id'];
+            isOneToOne: false;
+            referencedRelation: 'vocab_items';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -240,6 +321,7 @@ export type Database = {
       audio_source: 'mic' | 'tab';
       lesson_status: 'live' | 'processing' | 'review' | 'published';
       subtitle_display: 'bilingual' | 'korean_only' | 'hidden';
+      part_of_speech: 'noun' | 'verb' | 'adjective' | 'adverb' | 'expression' | 'grammar' | 'other';
     };
     CompositeTypes: { [_ in never]: never };
   };

@@ -6,7 +6,7 @@ const envSchema = z.object({
   STT_PROVIDER: z.string().default('mock'),
   STT_MODEL: z.string().optional(),
   LLM_PROVIDER: z.string().default('mock'),
-  // Read by @dasi/providers when LLM_PROVIDER=openai. Never logged or sent to clients.
+  // Read by @dasi/providers when STT_PROVIDER or LLM_PROVIDER is openai. Never logged or sent to clients.
   OPENAI_API_KEY: z.string().optional(),
   LLM_MODEL_FAST: z.string().optional(),
   LLM_MODEL_QUALITY: z.string().optional(),

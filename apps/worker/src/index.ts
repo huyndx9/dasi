@@ -2,16 +2,29 @@ import { createLlmProvider } from '@dasi/providers';
 import { Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { loadEnv } from './env';
+import { finalizeLesson } from './finalize';
 import { dispatch, LESSON_QUEUE, type JobHandlers } from './jobs';
+import { createSupabaseStore } from './supabase-store';
 
 const env = loadEnv();
-createLlmProvider(env);
+const llm = createLlmProvider(env);
+const store =
+  env.NEXT_PUBLIC_SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
+    ? createSupabaseStore(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+    : null;
+if (!store) {
+  console.warn(
+    'Thiếu NEXT_PUBLIC_SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY: job buổi học sẽ lỗi.',
+  );
+}
 
 const handlers: JobHandlers = {
-  // Summary, vocabulary and exercises are built in Phase 1 (docs/ROADMAP.md).
   'lesson.finalize': async ({ lessonId }) => {
-    console.info(`lesson.finalize ${lessonId}: chưa triển khai`);
-    return { lessonId, skipped: true };
+    if (!store)
+      throw new Error('Worker chưa có NEXT_PUBLIC_SUPABASE_URL và SUPABASE_SERVICE_ROLE_KEY');
+    const result = await finalizeLesson(lessonId, { store, llm });
+    console.info(`lesson.finalize ${lessonId}:`, result);
+    return result;
   },
 };
 
