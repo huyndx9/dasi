@@ -82,7 +82,7 @@ export interface LlmProvider {
 }
 ```
 
-Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. LLM dùng OpenAI (`openai.ts`: `translate` dùng `LLM_MODEL_FAST` và trả JSON theo từng mã ngôn ngữ; `complete` dùng `LLM_MODEL_QUALITY` với JSON schema sinh từ zod, kết quả được kiểm tra lại bằng zod). Adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
+Adapter đặt trong `packages/providers/src/adapters/`. Chọn adapter qua biến môi trường `STT_PROVIDER`, `LLM_PROVIDER`. LLM dùng OpenAI (`openai.ts`: `translate` dùng `LLM_MODEL_FAST` và trả JSON theo từng mã ngôn ngữ; `complete` dùng `LLM_MODEL_QUALITY` với JSON schema sinh từ zod, kết quả được kiểm tra lại bằng zod). STT có adapter OpenAI realtime transcription (`openai-stt.ts`, `STT_PROVIDER=openai` + `STT_MODEL`): mở WebSocket `intent=transcription`, đổi audio PCM 16 kHz sang 24 kHz (OpenAI chỉ nhận 24 kHz), để server VAD tách câu; delta → `partial`, câu hoàn tất → `final` theo đúng thứ tự nói, thời điểm lấy từ VAD. Từ vựng bài học (`context`) được gửi làm `prompt`. Adapter này không tách người nói (`speaker` để trống). Adapter `mock` (mặc định): STT trả về các câu tiếng Hàn cố định, dịch trả `[vi] <câu gốc>`. Nhờ vậy có thể phát triển và chạy test khi chưa có khoá API. Realtime và worker kiểm tra cấu hình nhà cung cấp ngay khi khởi động.
 
 ## Mô hình dữ liệu (rút gọn)
 
