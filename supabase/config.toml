@@ -1,2 +1,7 @@
 # Supabase CLI fills every other setting with its defaults (seed: ./seed.sql).
 project_id = "dasi"
+
+[auth]
+site_url = "http://localhost:3000"
+# Test builds sign in with the "Vào thử" button (NEXT_PUBLIC_DEMO_LOGIN=1, issue #20).
+enable_anonymous_sign_ins = true

@@ -1,0 +1,18 @@
+{
+  // One-click test environment (README → "Mở app thử bằng một link"). GitHub Codespaces
+  // builds this container, starts a private local Supabase inside it (migrations, seed
+  // data, "Vào thử" enabled) and opens the web app in a browser tab.
+  "name": "Dasi – bản thử",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "hostRequirements": { "cpus": 4, "memory": "8gb" },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "bash .devcontainer/start.sh",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "Dasi", "onAutoForward": "openBrowser" }
+  },
+  "otherPortsAttributes": { "onAutoForward": "silent" }
+}

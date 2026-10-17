@@ -69,6 +69,17 @@ dasi/
 └─ CLAUDE.md        # Hướng dẫn cho Claude Code
 ```
 
+## Mở app thử bằng một link (không cài gì)
+
+[![Mở trong GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/huyndx9/dasi?quickstart=1)
+
+1. Bấm nút trên (đăng nhập GitHub nếu được hỏi) → **Create codespace**.
+2. Chờ máy ảo dựng xong. Lần đầu mất khoảng 5–10 phút: cài thư viện, khởi động một Supabase riêng có sẵn bảng và dữ liệu mẫu, rồi chạy app. Có thể xem tiến trình trong cửa sổ Terminal.
+3. Khi Terminal hiện `Ready`, app tự mở trong tab mới. Nếu không thấy, mở tab **PORTS** ở dưới, dòng **Dasi (3000)**, bấm biểu tượng quả địa cầu.
+4. **Đăng nhập → Vào thử** với tên bất kỳ → chọn vai trò. Lớp mẫu có mã **HANGUL**: học sinh nhập mã này để vào lớp. Thử cả giáo viên và học sinh bằng cách mở link app trong một **cửa sổ ẩn danh**.
+
+Dữ liệu trong codespace là riêng, không đụng project Supabase thật. Codespace tự tắt sau 30 phút không dùng; mở lại ở [github.com/codespaces](https://github.com/codespaces). Tài khoản GitHub cá nhân có giờ dùng miễn phí mỗi tháng.
+
 ## Chạy thử trên máy của bạn (không cần biết lập trình)
 
 1. Cài [Node.js 22 LTS](https://nodejs.org) và [Git](https://git-scm.com/downloads). Mở Terminal (macOS) hoặc PowerShell (Windows), chạy `corepack enable` một lần để có `pnpm`.
