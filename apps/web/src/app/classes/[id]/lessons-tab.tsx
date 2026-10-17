@@ -30,7 +30,6 @@ export function LessonsTab({ lessons, failed }: { lessons: LessonRow[]; failed: 
   return (
     <ul className="flex flex-col gap-2">
       {lessons.map((l) => {
-        const status = lessonStatusInfo(l.status);
         const langs = l.target_langs.filter(isLanguageCode);
         return (
           <li key={l.id}>
@@ -62,22 +61,30 @@ export function LessonsTab({ lessons, failed }: { lessons: LessonRow[]; failed: 
                 {langs.map((code) => (
                   <LangChip key={code} code={code} />
                 ))}
-                <span
-                  className={cx(
-                    'inline-flex h-5 items-center gap-1.5 rounded-[5px] px-1.5 font-mono text-[10.5px] font-semibold tracking-[.04em]',
-                    toneClass[status.tone],
-                  )}
-                >
-                  {l.status === 'live' && (
-                    <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-live" />
-                  )}
-                  {tr(status.label)}
-                </span>
+                <StatusTag status={l.status} />
               </div>
             </Link>
           </li>
         );
       })}
     </ul>
+  );
+}
+
+/** Coloured lesson status tag; a live lesson gets a pulsing dot (docs/UI-UX.md). */
+export function StatusTag({ status }: { status: LessonStatus }) {
+  const info = lessonStatusInfo(status);
+  return (
+    <span
+      className={cx(
+        'inline-flex h-5 items-center gap-1.5 rounded-[5px] px-1.5 font-mono text-[10.5px] font-semibold tracking-[.04em] whitespace-nowrap',
+        toneClass[info.tone],
+      )}
+    >
+      {status === 'live' && (
+        <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-live" />
+      )}
+      {tr(info.label)}
+    </span>
   );
 }
