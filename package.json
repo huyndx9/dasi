@@ -1,0 +1,33 @@
+{
+  "name": "dasi",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "eslint .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "test:db": "scripts/test-db.sh",
+    "test:scripts": "node --test .github/scripts/*.test.cjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "supabase migration up",
+    "db:seed": "supabase db reset"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@next/eslint-plugin-next": "^16.4.2",
+    "eslint": "^9.39.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}

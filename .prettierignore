@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+design/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+.turbo/
+*.md

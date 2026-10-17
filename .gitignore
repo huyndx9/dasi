@@ -1,0 +1,43 @@
+# deps & build
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+build/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# test output
+playwright-report/
+test-results/
+
+# recordings & personal data (never commit)
+recordings/
+*.wav
+*.m4a
+*.mp3
+*.webm
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# claude code local settings
+.claude/settings.local.json
+
+# next
+next-env.d.ts
