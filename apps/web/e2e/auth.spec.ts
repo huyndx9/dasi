@@ -33,5 +33,18 @@ test('a failed OAuth callback explains what happened', async ({ page }) => {
 
 test('an external next parameter is ignored', async ({ page }) => {
   await page.goto('/login?next=https%3A%2F%2Fevil.example');
-  await expect(page.locator('input[name="next"]')).toHaveValue('/');
+  const nextInputs = page.locator('input[name="next"]');
+  await expect(nextInputs).toHaveCount(2); // trial and Google forms
+  for (const input of await nextInputs.all()) await expect(input).toHaveValue('/');
+});
+
+test('test builds offer a trial sign-in and explain when it is not enabled', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel('Tên hiển thị').fill('Cô Kim');
+  await page.getByRole('button', { name: 'Vào thử' }).click();
+  // The placeholder Supabase project does not answer, as when anonymous sign-ins are off.
+  await expect(page).toHaveURL('/login?error=guest');
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Allow anonymous sign-ins' }),
+  ).toBeVisible();
 });

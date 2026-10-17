@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { homePathFor, safeNext } from '@/lib/routes';
 import { getSession } from '@/lib/auth';
+import { demoLoginEnabled } from '@/lib/demo';
 import { tr } from '@/lib/i18n';
 
 async function requestOrigin(): Promise<string> {
@@ -27,6 +28,21 @@ export async function signInWithGoogle(formData: FormData) {
   });
   if (error || !data.url) redirect('/login?error=oauth');
   redirect(data.url);
+}
+
+/** Test builds only: enter without an account (Supabase anonymous sign-in). */
+export async function signInAsGuest(formData: FormData) {
+  const supabase = await createClient();
+  if (!supabase || !demoLoginEnabled()) redirect('/login');
+  const next = safeNext(formData.get('next')?.toString());
+  const name = (formData.get('displayName')?.toString() ?? '').trim().slice(0, 60);
+
+  const { error } = await supabase.auth.signInAnonymously({
+    // Stored in auth.users.raw_user_meta_data; the sign-up trigger copies it to the profile.
+    options: { data: { full_name: name || tr('login.demoDefaultName') } },
+  });
+  if (error) redirect('/login?error=guest');
+  redirect(next);
 }
 
 export async function signOut() {

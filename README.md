@@ -69,6 +69,40 @@ dasi/
 └─ CLAUDE.md        # Hướng dẫn cho Claude Code
 ```
 
+## Mở app thử bằng một link (không cài gì)
+
+[![Mở trong GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/huyndx9/dasi?quickstart=1)
+
+1. Bấm nút trên (đăng nhập GitHub nếu được hỏi) → **Create codespace**.
+2. Chờ máy ảo dựng xong. Lần đầu mất khoảng 5–10 phút: cài thư viện, khởi động một Supabase riêng có sẵn bảng và dữ liệu mẫu, rồi chạy app. Có thể xem tiến trình trong cửa sổ Terminal.
+3. Khi Terminal hiện `Ready`, app tự mở trong tab mới. Nếu không thấy, mở tab **PORTS** ở dưới, dòng **Dasi (3000)**, bấm biểu tượng quả địa cầu.
+4. **Đăng nhập → Vào thử** với tên bất kỳ → chọn vai trò. Lớp mẫu có mã **HANGUL**: học sinh nhập mã này để vào lớp. Thử cả giáo viên và học sinh bằng cách mở link app trong một **cửa sổ ẩn danh**.
+
+Dữ liệu trong codespace là riêng, không đụng project Supabase thật. Codespace tự tắt sau 30 phút không dùng; mở lại ở [github.com/codespaces](https://github.com/codespaces). Tài khoản GitHub cá nhân có giờ dùng miễn phí mỗi tháng.
+
+## Chạy thử trên máy của bạn (không cần biết lập trình)
+
+1. Cài [Node.js 22 LTS](https://nodejs.org) và [Git](https://git-scm.com/downloads). Mở Terminal (macOS) hoặc PowerShell (Windows), chạy `corepack enable` một lần để có `pnpm`.
+2. Tải code và cài thư viện:
+   ```bash
+   git clone https://github.com/huyndx9/dasi.git
+   cd dasi
+   pnpm install
+   ```
+3. Supabase Dashboard của project `qcqqadflhiqxjkaizohc`:
+   - **SQL Editor → New query:** dán toàn bộ nội dung từng file trong `supabase/migrations/` theo thứ tự tên, bấm **Run** cho từng file. Nếu Table Editor đã có bảng `profiles` và `lessons` thì bỏ qua bước này.
+   - **Authentication → Sign In / Providers:** bật **Allow anonymous sign-ins** → **Save**.
+   - **Project Settings → API Keys:** sao chép khoá **anon public** (hoặc **Publishable key**).
+4. Tạo file `.env.local` ở thư mục `dasi` với 3 dòng:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=https://qcqqadflhiqxjkaizohc.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<dán khoá vừa sao chép>
+   NEXT_PUBLIC_DEMO_LOGIN=1
+   ```
+5. Chạy `pnpm --filter web dev`, mở http://localhost:3000 → **Đăng nhập** → nhập tên → **Vào thử** → chọn **Giáo viên** → **Lớp mới**. Mở thêm một **cửa sổ ẩn danh**, vào thử với tên khác, chọn **Học sinh**, nhập mã lớp vừa tạo.
+
+Cập nhật bản mới: `git pull && pnpm install`, rồi chạy lại bước 5.
+
 ## Bắt đầu
 
 ### Yêu cầu

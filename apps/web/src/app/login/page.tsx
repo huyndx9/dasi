@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
-import { signInWithGoogle } from '@/app/actions/auth';
+import { signInAsGuest, signInWithGoogle } from '@/app/actions/auth';
 import { Logo } from '@/components/app-shell';
 import { Alert, btn, Card, cx } from '@/components/ui';
 import { getSession } from '@/lib/auth';
+import { demoLoginEnabled } from '@/lib/demo';
 import { tr } from '@/lib/i18n';
 import { homePathFor, safeNext } from '@/lib/routes';
 import { getSupabaseEnv } from '@/lib/supabase/env';
@@ -16,6 +17,7 @@ export default async function LoginPage({
   const session = await getSession();
   if (session) redirect(safeNext(next, homePathFor(session.profile.role)));
   const configured = getSupabaseEnv() !== null;
+  const demo = configured && demoLoginEnabled();
 
   return (
     <main className="grid min-h-dvh place-items-center px-4 py-8">
@@ -25,8 +27,34 @@ export default async function LoginPage({
           <span>Dasi</span>
         </div>
         <h1 className="text-2xl font-bold">{tr('login.title')}</h1>
-        {error && <Alert tone="error">{tr('login.error')}</Alert>}
+        {error && (
+          <Alert tone="error">{tr(error === 'guest' ? 'login.demoError' : 'login.error')}</Alert>
+        )}
         {!configured && <Alert tone="error">{tr('login.notConfigured')}</Alert>}
+        {demo && (
+          <>
+            <form action={signInAsGuest} className="flex flex-col gap-3 rounded bg-sunk p-4">
+              <input type="hidden" name="next" value={safeNext(next)} />
+              <h2 className="font-semibold">{tr('login.demoTitle')}</h2>
+              <label className="flex flex-col gap-1.5 text-xs font-semibold text-muted">
+                {tr('login.demoName')}
+                <input
+                  id="guest-name"
+                  name="displayName"
+                  maxLength={60}
+                  autoComplete="nickname"
+                  placeholder={tr('login.demoNamePlaceholder')}
+                  className="h-11 rounded-sm border border-line bg-surface px-3 text-sm text-fg"
+                />
+              </label>
+              <button type="submit" className={cx(btn.base, btn.primary, 'h-12 w-full')}>
+                {tr('login.demoSubmit')}
+              </button>
+              <p className="text-xs text-muted">{tr('login.demoHint')}</p>
+            </form>
+            <p className="text-center text-xs text-faint">{tr('login.or')}</p>
+          </>
+        )}
         <form action={signInWithGoogle}>
           <input type="hidden" name="next" value={safeNext(next)} />
           <button
