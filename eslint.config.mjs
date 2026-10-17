@@ -45,6 +45,11 @@ export default tseslint.config(
     },
   },
   {
+    // Playwright scripts: callbacks passed to page.evaluate() run in the browser.
+    files: ['apps/web/scripts/**/*.mjs', 'apps/web/e2e/**/*.ts'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser } },
     plugins: { '@next/next': nextPlugin, 'react-hooks': reactHooks },

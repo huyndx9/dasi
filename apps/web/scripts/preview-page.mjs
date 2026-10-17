@@ -11,7 +11,10 @@ const [dir, notesPath, out] = process.argv.slice(2);
 const manifest = JSON.parse(readFileSync(`${dir}/manifest.json`, 'utf8'));
 const notes = JSON.parse(readFileSync(notesPath, 'utf8'));
 const esc = (s) =>
-  String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  String(s).replace(
+    /[&<>"]/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
+  );
 const img = (file) => `data:image/png;base64,${readFileSync(`${dir}/${file}`).toString('base64')}`;
 const variantLabel = {
   'mobile-light': 'Điện thoại · sáng',

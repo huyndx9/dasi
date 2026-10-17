@@ -56,5 +56,7 @@ await browser.close();
 writeFileSync(`${outDir}/manifest.json`, JSON.stringify(manifest, null, 2));
 for (const m of manifest) {
   const problems = [m.overflow > 0 && `tràn ngang ${m.overflow}px`, ...m.errors].filter(Boolean);
-  console.log(`${m.status} ${m.path} ${m.variant}${problems.length ? ' ⚠ ' + problems.join('; ') : ''}`);
+  console.log(
+    `${m.status} ${m.path} ${m.variant}${problems.length ? ' ⚠ ' + problems.join('; ') : ''}`,
+  );
 }
